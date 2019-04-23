@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/andela/ah-the-jedi-backend.svg?branch=develop)](https://travis-ci.com/andela/ah-the-jedi-backend)
+
 Authors Haven - A Social platform for the creative at heart.
 =======
 
