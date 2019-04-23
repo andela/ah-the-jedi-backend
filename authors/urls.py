@@ -1,7 +1,7 @@
 """authors URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.11/topics/http/urls/
+    https://docs.djangoproject.com/en/2.1/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -18,7 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-
-    url(r'^api/', include('authors.apps.authentication.urls', namespace='authentication')),
+    url(r'^api/', include(('authors.apps.authentication.urls', 'authentication'), namespace='authentication')),
 ]
 
