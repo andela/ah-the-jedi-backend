@@ -4,6 +4,9 @@
 Authors Haven - A Social platform for the creative at heart.
 =======
 
+Authors Haven Documentation is availabe [Here](https://ah-the-jedi-backend-staging.herokuapp.com/api/)
+
+
 ## Vision
 Create a community of like minded authors to foster inspiration and innovation
 by leveraging the modern web.
