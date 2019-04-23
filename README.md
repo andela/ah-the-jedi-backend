@@ -394,6 +394,34 @@ No additional parameters required
 
 `GET /api/tags`
 
+## Local Development Setup
+ - First Create python virtual venv
+ ```
+  $ virtualenv -p python venv
+ ```
+ - Install Requirements
+ ```
+  $ pip install -r api/requiremts.txt
+ ```
+ - Copy .env-example to .env and set configs
+ ```
+  $ copy .env-example .env
+ ```
+ - Create postgres database
+ ```
+  $ sudo su postgres
+  $ psql
+  postgres=# CREATE USER 'author' WITH PASSWORD <password>;
+  postgres=# CREATE DATABASE 'authorshaven';
+  postgres=# GRANT ALL PRIVILEGES ON DATABASE 'authorshaven' TO 'author';
+  postgres=# \q
+  $ exit
+ ```
+ - Run Server
+ ```
+  $ python api/manage.py runserver
+ ```
+
 
 
 
