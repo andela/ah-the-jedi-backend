@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/andela/ah-the-jedi-backend.svg?branch=develop)](https://travis-ci.com/andela/ah-the-jedi-backend)
+[![Coverage Status](https://coveralls.io/repos/github/andela/ah-the-jedi-backend/badge.svg?branch=develop)](https://coveralls.io/github/andela/ah-the-jedi-backend?branch=develop)
+
 Authors Haven - A Social platform for the creative at heart.
 =======
 
