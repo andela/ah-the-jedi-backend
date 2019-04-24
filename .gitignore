@@ -96,3 +96,7 @@ db.sqlite3
 
 # Vscode
 .vscode/
+
+# Pipfile
+Pipfile
+Pipfile.lock
