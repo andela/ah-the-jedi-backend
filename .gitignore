@@ -94,5 +94,9 @@ ENV/
 # SQLite3
 db.sqlite3
 
-#VScode
+# Vscode
 .vscode/
+
+# Pipfile
+Pipfile
+Pipfile.lock
