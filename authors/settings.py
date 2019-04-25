@@ -48,6 +48,9 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
+    'rest_framework_swagger',
+
+    'mailer'
 ]
 
 MIDDLEWARE = [
@@ -67,7 +70,7 @@ ROOT_URLCONF = 'authors.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, './templates'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -151,3 +154,22 @@ REST_FRAMEWORK = {
 }
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Swagger Settings
+SWAGGER_SETTINGS = {
+   'SHOW_REQUEST_HEADERS': True,
+   'USE_SESSION_AUTH': False,
+   'DOC_EXPANSION': 'list',
+   'SECURITY_DEFINITIONS': {
+       'api_key': {
+           'type': 'apiKey',
+           'in': 'header',
+           'name': 'Authorization'
+       }
+   }
+}
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True

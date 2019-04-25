@@ -1,16 +1,25 @@
-from rest_framework import status
-from rest_framework.generics import RetrieveUpdateAPIView
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.translation import ugettext_lazy as _
+
+from rest_framework import status, generics, permissions, views
+from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer, UidAndTokenSerializer
 )
+from authors.apps.authentication.models import User
+from authors.apps.core import exceptions
 
 
-class RegistrationAPIView(APIView):
+class RegistrationAPIView(GenericAPIView):
+    """
+    post:
+    Signup a user.
+    """
     # Allow any user (authenticated or not) to hit this endpoint.
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
@@ -29,7 +38,11 @@ class RegistrationAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class LoginAPIView(APIView):
+class LoginAPIView(GenericAPIView):
+    """
+    post:
+    Login a user.
+    """
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
@@ -73,3 +86,32 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class ActivationView(generics.GenericAPIView):
+    """
+    post:
+    Activate user.
+    """
+    serializer_class = UidAndTokenSerializer
+    permission_classes = [permissions.AllowAny]
+    token_generator = default_token_generator
+
+    def post(self, request):
+        uid = request.GET.get("uid", "")
+        token = request.GET.get("token", "")
+
+        serializer = self.serializer_class(data={"uid": uid, "token": token})
+        serializer.is_valid(raise_exception=True)
+
+        user = User.objects.get(id=uid)
+        if user.is_active:
+            raise exceptions.AlreadyProcessed(
+                _('The user account is already active.'))
+
+        user.is_active = True
+        user.save()
+
+        response_data = {
+            "message": "Your account has been activated."
+        }
+
+        return Response(data=response_data ,status=status.HTTP_200_OK)
