@@ -1,11 +1,7 @@
-<<<<<<< HEAD
-from rest_framework import status
-=======
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import status, generics, permissions, views
->>>>>>> 530963d614f1c9e9c18c60694031f17917966379
 from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -39,7 +35,13 @@ class RegistrationAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        response = {
+                "data": serializer.data,
+                "message": "Account succesfully registered. Check your mail inbox to activate your account.",
+        }
+
+        return Response(data=response,
+                        status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(GenericAPIView):
@@ -89,8 +91,6 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-<<<<<<< HEAD
-=======
 
 class ActivationView(generics.GenericAPIView):
     """
@@ -121,4 +121,3 @@ class ActivationView(generics.GenericAPIView):
         }
 
         return Response(data=response_data ,status=status.HTTP_200_OK)
->>>>>>> 530963d614f1c9e9c18c60694031f17917966379

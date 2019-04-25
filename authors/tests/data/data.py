@@ -13,6 +13,16 @@ class Data:
                 "password": "Admin12345"
             }
         }
+        
+        self.user_data2 = {
+            "user": {
+                "email": "testuser2@email.com",
+                "username": "Alpha2",
+                "password": "Admin12345"
+            }
+        }
+
+
 
         self.missing_user_data = {
             "user": {

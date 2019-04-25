@@ -1,8 +1,7 @@
 from rest_framework.views import exception_handler
 from django.utils.translation import ugettext_lazy as _
-from rest_framework.exceptions import APIException, NotFound
+from rest_framework.exceptions import APIException
 from rest_framework import status
-from django.http import Http404
 
 def core_exception_handler(exc, context):
     # If an exception is thrown that we don't explicitly handle here, we want

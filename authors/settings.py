@@ -49,11 +49,8 @@ INSTALLED_APPS = [
     'authors.apps.core',
     'authors.apps.profiles',
     'rest_framework_swagger',
-<<<<<<< HEAD
-=======
 
     'mailer'
->>>>>>> 530963d614f1c9e9c18c60694031f17917966379
 ]
 
 MIDDLEWARE = [
@@ -156,6 +153,8 @@ REST_FRAMEWORK = {
     # ),
 }
 
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.AllowAllUsersModelBackend']
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Swagger Settings
 SWAGGER_SETTINGS = {
@@ -170,12 +169,10 @@ SWAGGER_SETTINGS = {
        }
    }
 }
-<<<<<<< HEAD
-=======
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
->>>>>>> 530963d614f1c9e9c18c60694031f17917966379
+

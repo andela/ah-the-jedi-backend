@@ -42,6 +42,7 @@ class SignupUserViewCase(BaseTest):
         """
 
         new_user = self.signup_user()
+        # print(new_user.data)
 
         self.assertEqual(
             new_user.status_code,
@@ -50,9 +51,9 @@ class SignupUserViewCase(BaseTest):
 
         self.assertTrue(
             self.base_data.user_data["user"]["username"] in
-            new_user.data["username"] and
+            new_user.data.get('data')["username"] and
             self.base_data.user_data["user"]["email"] in
-            new_user.data["email"]
+            new_user.data.get('data')["email"]
         )
 
     def test_raises_error_if_details_missing_key_or_value(self):

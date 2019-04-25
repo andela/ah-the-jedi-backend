@@ -410,6 +410,12 @@ No additional parameters required
  ```
   $ copy .env-example .env
  ```
+ - Set email environment configs in the .env
+ ```
+  $ EMAIL_HOST_USER='<your email>'
+  $ EMAIL_HOST_PASSWORD='<your email password>'
+  $ DOMAIN='http://127.0.0.1:8000'
+ ```
  - Create postgres database
  ```
   $ sudo su postgres
@@ -424,7 +430,3 @@ No additional parameters required
  ```
   $ python api/manage.py runserver
  ```
-
-
-
-

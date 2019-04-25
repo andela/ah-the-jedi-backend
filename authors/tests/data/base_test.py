@@ -25,8 +25,19 @@ class BaseTest(TestCase):
         data = data or self.base_data.user_data
 
         return self.client.post(
-            "/api/users",
+            "/api/users/",
             data,
+            format="json"
+        )
+
+    def activate_user(self, uid, token):
+        """
+        This method 'activate_user' activates a user account
+        using the provided details
+        """
+
+        return self.client.post(
+            "/api/users/activate/?uid={}&token={}".format(uid, token), 
             format="json"
         )
 
@@ -40,7 +51,7 @@ class BaseTest(TestCase):
         data = data or self.base_data.login_data
 
         response = self.client.post(
-            "/api/users/login",
+            "/api/users/login/",
             data,
             format="json"
         )
@@ -55,7 +66,7 @@ class BaseTest(TestCase):
         """
 
         return self.client.get(
-            "/api/user",
+            "/api/user/",
             format="json"
         )
 
@@ -69,7 +80,7 @@ class BaseTest(TestCase):
         data = data or self.base_data.update_data
 
         return self.client.put(
-            "/api/user",
+            "/api/user/",
             data,
             format="json"
         )

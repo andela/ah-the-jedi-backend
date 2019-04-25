@@ -1,5 +1,6 @@
 from rest_framework_swagger.views import get_swagger_view
 from django.urls import path
+from django.conf.urls import url
 
 from .views import (
     LoginAPIView, RegistrationAPIView, UserRetrieveUpdateAPIView, ActivationView
@@ -12,5 +13,6 @@ urlpatterns = [
     path('users/', RegistrationAPIView.as_view()),
     path('users/login/', LoginAPIView.as_view()),
     path('users/activate/', ActivationView.as_view()),
-    path('/', swagger_view)
+    url(r'^$', swagger_view)
 ]
+
