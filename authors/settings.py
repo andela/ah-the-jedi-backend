@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
+    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
@@ -151,3 +152,16 @@ REST_FRAMEWORK = {
 }
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Swagger Settings
+SWAGGER_SETTINGS = {
+   'SHOW_REQUEST_HEADERS': True,
+   'USE_SESSION_AUTH': False,
+   'DOC_EXPANSION': 'list',
+   'SECURITY_DEFINITIONS': {
+       'api_key': {
+           'type': 'apiKey',
+           'in': 'header',
+           'name': 'Authorization'
+       }
+   }
+}
