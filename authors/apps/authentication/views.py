@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 from rest_framework import status
+=======
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.translation import ugettext_lazy as _
+
+from rest_framework import status, generics, permissions, views
+>>>>>>> 530963d614f1c9e9c18c60694031f17917966379
 from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -6,8 +13,10 @@ from rest_framework.views import APIView
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer, UidAndTokenSerializer
 )
+from authors.apps.authentication.models import User
+from authors.apps.core import exceptions
 
 
 class RegistrationAPIView(GenericAPIView):
@@ -80,3 +89,36 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+<<<<<<< HEAD
+=======
+
+class ActivationView(generics.GenericAPIView):
+    """
+    post:
+    Activate user.
+    """
+    serializer_class = UidAndTokenSerializer
+    permission_classes = [permissions.AllowAny]
+    token_generator = default_token_generator
+
+    def post(self, request):
+        uid = request.GET.get("uid", "")
+        token = request.GET.get("token", "")
+
+        serializer = self.serializer_class(data={"uid": uid, "token": token})
+        serializer.is_valid(raise_exception=True)
+
+        user = User.objects.get(id=uid)
+        if user.is_active:
+            raise exceptions.AlreadyProcessed(
+                _('The user account is already active.'))
+
+        user.is_active = True
+        user.save()
+
+        response_data = {
+            "message": "Your account has been activated."
+        }
+
+        return Response(data=response_data ,status=status.HTTP_200_OK)
+>>>>>>> 530963d614f1c9e9c18c60694031f17917966379
