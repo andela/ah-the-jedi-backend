@@ -1,5 +1,7 @@
+import jwt
 from rest_framework import status
 from .base_test import BaseTest
+from authors.settings import SECRET_KEY
 
 
 class UserLoginTest(BaseTest):
@@ -88,7 +90,6 @@ class UserLoginTest(BaseTest):
             ).data["errors"]["error"][0]
         )
 
-
     def test_user_cannot_login_with_an_inactive_account(self):
         """
         Test method to ensure users cannot login without an inactive
@@ -98,8 +99,7 @@ class UserLoginTest(BaseTest):
         login = self.login_user(self.base_data.user_data2)
 
         self.assertEqual(login.status_code,
-                         status.HTTP_403_FORBIDDEN)
-
+                         status.HTTP_401_UNAUTHORIZED)
 
     def test_user_cannot_activate_account_with_wrong_uid(self):
         """
@@ -108,15 +108,15 @@ class UserLoginTest(BaseTest):
         """
 
         activate = self.activate_user(uid='abc',
-                                      token=self.signup_user.data.get('data')['token']
-         )
+                                      token=self.signup_user.data.get('data')[
+                                          'token']
+                                      )
 
         self.assertEqual(activate.status_code,
                          status.HTTP_400_BAD_REQUEST)
 
         self.assertEqual(activate.data.get('errors')['uid'][0],
                          'A valid integer is required.')
-
 
     def test_user_cannot_activate_account_with_unexisting_uid(self):
         """
@@ -125,15 +125,15 @@ class UserLoginTest(BaseTest):
         """
 
         activate = self.activate_user(uid='10000',
-                                      token=self.signup_user.data.get('data')['token']
-         )
+                                      token=self.signup_user.data.get('data')[
+                                          'token']
+                                      )
 
         self.assertEqual(activate.status_code,
                          status.HTTP_400_BAD_REQUEST)
 
         self.assertEqual(activate.data.get('errors')['uid'][0],
                          'Invalid user id, the user does not exist.')
-
 
     def test_user_cannot_activate_account_with_wrong_token(self):
         """
@@ -146,10 +146,9 @@ class UserLoginTest(BaseTest):
 
         self.assertEqual(activate.status_code,
                          status.HTTP_400_BAD_REQUEST)
-        
+
         self.assertEqual(activate.data.get('errors')['error'][0],
                          'The provided token for the user is not valid.')
-
 
     def test_user_can_activate_account_with_right_credentials(self):
         """
@@ -160,7 +159,73 @@ class UserLoginTest(BaseTest):
         activate = self.activate_user(uid=self.signup_user.data.get('data')['id'],
                                       token=self.signup_user.data.get('data')['token'])
 
-        self.assertEqual(activate.status_code,200)
+        self.assertEqual(activate.status_code, 200)
 
         self.assertEqual(activate.data.get('message'),
                          'Your account has been activated.')
+
+    def test_returns_valid_token_on_successful_login(self):
+        """
+        Test if a valid jwt token is returned on successful user login
+        """
+        new_user = self.login_user()
+
+        self.assertIn('token', new_user.data)
+
+        payload = jwt.decode(
+            new_user.data['token'], SECRET_KEY, algorithms=['HS256'])
+
+        self.assertEqual(
+            payload['email'],
+            self.base_data.user_data["user"]["email"]
+        )
+
+    def test_no_token_returned_on_unsuccessful_login(self):
+        """
+        Test to ensure no token is returned upon unsuccessful login
+        """
+
+        self.base_data.login_data["user"].update({
+            "password": "IncorrectPassword"
+        })
+
+        new_user = self.login_user()
+
+        self.assertEqual(
+            new_user.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+        self.assertNotIn('token', new_user.data)
+
+    def test_returns_valid_token_on_successful_activation(self):
+        """
+        Test if a valid jwt token is returned on successful registration
+        """
+        activate = self.activate_user(uid=self.signup_user.data.get('data')['id'],
+                                      token=self.signup_user.data.get('data')['token'])
+
+        self.assertIn('token', activate.data)
+
+        payload = jwt.decode(
+            activate.data['token'], SECRET_KEY, algorithms=['HS256'])
+
+        self.assertEqual(
+            payload['email'],
+            self.base_data.user_data2["user"]["email"]
+        )
+
+    def test_no_token_returned_on_unsuccessful_activation(self):
+        """
+        Test to ensure no token is returned upon unsuccessful activation
+        """
+
+        activate = self.activate_user(uid=self.signup_user.data.get('data')['id'],
+                                      token='12345')
+
+        self.assertEqual(
+            activate.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+        self.assertNotIn('token', activate.data)
