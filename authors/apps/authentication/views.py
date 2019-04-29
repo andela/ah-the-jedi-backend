@@ -6,6 +6,7 @@ from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .backends import handle_token
 
 from .renderers import UserJSONRenderer
 from .serializers import (
@@ -36,8 +37,8 @@ class RegistrationAPIView(GenericAPIView):
         serializer.save()
 
         response = {
-                "data": serializer.data,
-                "message": "Account succesfully registered. Check your mail inbox to activate your account.",
+            "data": serializer.data,
+            "message": "Account succesfully registered. Check your mail inbox to activate your account.",
         }
 
         return Response(data=response,
@@ -62,8 +63,12 @@ class LoginAPIView(GenericAPIView):
         # handles everything we need.
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
+        user_data = User.objects.get(email=user['email'])
+        token = handle_token(user_data)
+        res = serializer.data
+        res['token'] = token
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
@@ -92,6 +97,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class ActivationView(generics.GenericAPIView):
     """
     post:
@@ -116,8 +122,11 @@ class ActivationView(generics.GenericAPIView):
         user.is_active = True
         user.save()
 
+        token = handle_token(user)
+
         response_data = {
-            "message": "Your account has been activated."
+            "message": "Your account has been activated.",
+            "token": token
         }
 
-        return Response(data=response_data ,status=status.HTTP_200_OK)
+        return Response(data=response_data, status=status.HTTP_200_OK)

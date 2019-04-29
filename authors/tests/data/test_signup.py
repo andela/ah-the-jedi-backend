@@ -1,6 +1,8 @@
+import jwt
 from authors.apps.authentication.models import User
 from rest_framework import status
 from .base_test import BaseTest
+from authors.settings import SECRET_KEY
 
 
 class ModelTestCase(BaseTest):

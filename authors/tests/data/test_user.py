@@ -27,21 +27,18 @@ class UserTest(BaseTest):
         authenticated user
         """
 
-        self.client.login(
-            username=self.base_data.username,
-            password=self.base_data.password
-        )
+        token = self.login_user_and_get_token()
 
         self.assertEqual(
-            self.fetch_current_user().status_code,
+            self.fetch_current_user(token).status_code,
             status.HTTP_200_OK
         )
 
         self.assertTrue(
             self.base_data.user_data["user"]["username"] in
-            self.fetch_current_user().data["username"] and
+            self.fetch_current_user(token).data["username"] and
             self.base_data.user_data["user"]["email"] in
-            self.fetch_current_user().data["email"]
+            self.fetch_current_user(token).data["email"]
         )
 
     def test_successful_update_if_authorization_provided(self):
@@ -50,30 +47,27 @@ class UserTest(BaseTest):
         current user is authenticated
         """
 
-        self.client.login(
-            username=self.base_data.username,
-            password=self.base_data.password
-        )
+        token = self.login_user_and_get_token()
 
         self.assertEqual(
-            self.update_user_details().status_code,
+            self.update_user_details(token=token).status_code,
             status.HTTP_200_OK
         )
 
         self.assertEqual(
-            self.update_user_details().data["username"],
+            self.update_user_details(token=token).data["username"],
             self.base_data.update_data["user"]["username"]
         )
 
     def test_raises_error_if_authorization_missing(self):
         """
-        Test for Forbidden raised if authorization
+        Test for unathorized error raised if authorization
         not provided
         """
 
         self.assertEqual(
             self.fetch_current_user().status_code,
-            status.HTTP_403_FORBIDDEN
+            status.HTTP_401_UNAUTHORIZED
         )
 
         self.assertTrue(
@@ -81,15 +75,15 @@ class UserTest(BaseTest):
             self.fetch_current_user().data["detail"]
         )
 
-    def test_forbidden_error_if_authorization_missing(self):
+    def test_unauthorized_error_if_authorization_missing(self):
         """
-        Test for Forbidden raised if authorization
+        Test for unauthorization error raised if authorization
         not provided
         """
 
         self.assertEqual(
             self.update_user_details().status_code,
-            status.HTTP_403_FORBIDDEN
+            status.HTTP_401_UNAUTHORIZED
         )
 
         self.assertTrue(
@@ -110,7 +104,7 @@ class UserTest(BaseTest):
 
         self.assertEqual(
             self.fetch_current_user().status_code,
-            status.HTTP_403_FORBIDDEN
+            status.HTTP_401_UNAUTHORIZED
         )
 
     def test_raises_forbidden_if_incorrect_authorization_credentials(self):
@@ -126,5 +120,5 @@ class UserTest(BaseTest):
 
         self.assertEqual(
             self.update_user_details().status_code,
-            status.HTTP_403_FORBIDDEN
+            status.HTTP_401_UNAUTHORIZED
         )

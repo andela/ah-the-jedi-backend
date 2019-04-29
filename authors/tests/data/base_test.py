@@ -37,7 +37,7 @@ class BaseTest(TestCase):
         """
 
         return self.client.post(
-            "/api/users/activate/?uid={}&token={}".format(uid, token), 
+            "/api/users/activate/?uid={}&token={}".format(uid, token),
             format="json"
         )
 
@@ -58,19 +58,26 @@ class BaseTest(TestCase):
 
         return response
 
-    def fetch_current_user(self, headers=""):
+    def fetch_current_user(self, headers=None):
         """
         This method 'fetch_current_user'
         fetches details of current user
         provided with correct authorization
         """
+        if headers:
+            return self.client.get(
+                "/api/user/",
+                format="json",
+                HTTP_AUTHORIZATION='Bearer ' + headers
+            )
 
-        return self.client.get(
-            "/api/user/",
-            format="json"
-        )
+        else:
+            return self.client.get(
+                "/api/user/",
+                format="json"
+            )
 
-    def update_user_details(self, data=''):
+    def update_user_details(self, data='', token=None):
         """
         This method 'update_user_details'
         updates details of current user with
@@ -79,8 +86,22 @@ class BaseTest(TestCase):
 
         data = data or self.base_data.update_data
 
-        return self.client.put(
-            "/api/user/",
-            data,
-            format="json"
-        )
+        if token:
+            return self.client.put(
+                "/api/user/",
+                data,
+                format="json",
+                HTTP_AUTHORIZATION='Bearer ' + token
+            )
+        else:
+            return self.client.put(
+                "/api/user/",
+                data,
+                format="json"
+            )
+
+    def login_user_and_get_token(self):
+        res = self.login_user()
+        token = res.data['token']
+
+        return token
