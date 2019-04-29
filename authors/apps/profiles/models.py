@@ -17,7 +17,7 @@ class UserProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.user.username
+        return self.user.username  # pragma: no cover
 
 
 def create_profile(sender, **kwargs):

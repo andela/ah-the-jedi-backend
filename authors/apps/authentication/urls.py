@@ -15,4 +15,3 @@ urlpatterns = [
     path('users/activate/', ActivationView.as_view()),
     url(r'^$', swagger_view)
 ]
-

@@ -16,9 +16,9 @@ class Data:
 
         self.user_data2 = {
             "user": {
-                "email": "testuser2@email.com",
-                "username": "Alpha2",
-                "password": "Admin12345"
+                "email": "anotheruser@gmail.com",
+                "username": "NewUser",
+                "password": "admin1211"
             }
         }
 
@@ -57,4 +57,15 @@ class Data:
             'title': 'First test data',
             'description': 'This is the first test data',
             'body': 'This is the first body'
+        }
+
+        self.article_control_data = {
+            'title': 'Second test data',
+            'description': 'This is the second test data',
+            'body': 'This is the second body'
+        }
+
+        self.article_missing_data = {
+            'title': 'Second test data',
+            'description': 'This is the second test data',
         }
