@@ -12,8 +12,6 @@ import cloudinary
 import datetime
 import environ
 
-import cloudinary
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -229,7 +227,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 
-
 # Cloudinary settings for Django. Add to your settings file.
 
 CLOUDINARY_NAME = env.str('CLOUDINARY_CLOUD_NAME')
@@ -277,6 +274,6 @@ SOCIAL_AUTH_PIPELINE = (
 
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-SOCIAL_AUTH_TWITTER_KEY=os.getenv('SOCIAL_AUTH_TWITTER_KEY')
-SOCIAL_AUTH_TWITTER_SECRET=os.getenv('SOCIAL_AUTH_TWITTER_SECRET')
+SOCIAL_AUTH_TWITTER_KEY = os.getenv('SOCIAL_AUTH_TWITTER_KEY')
+SOCIAL_AUTH_TWITTER_SECRET = os.getenv('SOCIAL_AUTH_TWITTER_SECRET')
 SOCIAL_AUTH_TWITTER_SCOPE = ['email']
