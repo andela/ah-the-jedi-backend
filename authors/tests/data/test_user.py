@@ -14,7 +14,12 @@ class UserTest(BaseTest):
 
         BaseTest.setUp(self)
 
-        self.signup_user()
+        signup = self.signup_user()
+
+        uid = signup.data.get('data')['id']
+        token = signup.data.get('data')['token']
+
+        self.activate_user(uid=uid, token=token)
 
     def test_successful_fetch_if_authorization_provided(self):
         """

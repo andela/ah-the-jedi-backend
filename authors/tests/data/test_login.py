@@ -12,7 +12,14 @@ class UserLoginTest(BaseTest):
 
         BaseTest.setUp(self)
 
-        self.signup_user()
+        signup = self.signup_user()
+
+        uid = signup.data.get('data')['id']
+        token = signup.data.get('data')['token']
+
+        self.activate_user(uid=uid, token=token)
+
+        self.signup_user = self.signup_user(data=self.base_data.user_data2)
 
     def test_successful_login_if_correct_credentials(self):
         """
@@ -80,3 +87,80 @@ class UserLoginTest(BaseTest):
             "email and password was not found" in self.login_user(
             ).data["errors"]["error"][0]
         )
+
+
+    def test_user_cannot_login_with_an_inactive_account(self):
+        """
+        Test method to ensure users cannot login without an inactive
+        account
+        """
+
+        login = self.login_user(self.base_data.user_data2)
+
+        self.assertEqual(login.status_code,
+                         status.HTTP_403_FORBIDDEN)
+
+
+    def test_user_cannot_activate_account_with_wrong_uid(self):
+        """
+        Test method to ensure users cannot activate their account with
+        a wrong id
+        """
+
+        activate = self.activate_user(uid='abc',
+                                      token=self.signup_user.data.get('data')['token']
+         )
+
+        self.assertEqual(activate.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(activate.data.get('errors')['uid'][0],
+                         'A valid integer is required.')
+
+
+    def test_user_cannot_activate_account_with_unexisting_uid(self):
+        """
+        Test method to ensure users cannot activate their account with
+        an unexisting id
+        """
+
+        activate = self.activate_user(uid='10000',
+                                      token=self.signup_user.data.get('data')['token']
+         )
+
+        self.assertEqual(activate.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(activate.data.get('errors')['uid'][0],
+                         'Invalid user id, the user does not exist.')
+
+
+    def test_user_cannot_activate_account_with_wrong_token(self):
+        """
+        Test method to ensure users cannot activate their account with
+        a wrong token
+        """
+
+        activate = self.activate_user(uid=self.signup_user.data.get('data')['id'],
+                                      token='12345')
+
+        self.assertEqual(activate.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+        
+        self.assertEqual(activate.data.get('errors')['error'][0],
+                         'The provided token for the user is not valid.')
+
+
+    def test_user_can_activate_account_with_right_credentials(self):
+        """
+        Test method to ensure users can activate their account with
+        right credentials
+        """
+
+        activate = self.activate_user(uid=self.signup_user.data.get('data')['id'],
+                                      token=self.signup_user.data.get('data')['token'])
+
+        self.assertEqual(activate.status_code,200)
+
+        self.assertEqual(activate.data.get('message'),
+                         'Your account has been activated.')

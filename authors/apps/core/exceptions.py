@@ -1,4 +1,7 @@
 from rest_framework.views import exception_handler
+from django.utils.translation import ugettext_lazy as _
+from rest_framework.exceptions import APIException
+from rest_framework import status
 
 def core_exception_handler(exc, context):
     # If an exception is thrown that we don't explicitly handle here, we want
@@ -16,7 +19,7 @@ def core_exception_handler(exc, context):
 
     if exception_class in handlers:
         # If this exception is one that we can handle, handle it. Otherwise,
-        # return the response generated earlier by the default exception 
+        # return the response generated earlier by the default exception
         # handler.
         return handlers[exception_class](exc, context, response)
 
@@ -30,3 +33,8 @@ def _handle_generic_error(exc, context, response):
     }
 
     return response
+
+class AlreadyProcessed(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = _('The request has already been processed.')
+    default_code = 'already_processed'

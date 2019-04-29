@@ -1,3 +1,4 @@
+import os
 import jwt
 
 from datetime import datetime, timedelta
@@ -6,13 +7,17 @@ from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
+from django.contrib.auth.tokens import default_token_generator
 from django.db import models
+
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
 class UserManager(BaseUserManager):
     """
     Django requires that custom users define their own Manager class. By
     inheriting from `BaseUserManager`, we get a lot of the same code used by
-    Django to create a `User` for free. 
+    Django to create a `User` for free.
 
     All we have to do is override the `create_user` function which we will use
     to create `User` objects.
@@ -30,6 +35,22 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save()
 
+        token = default_token_generator.make_token(user)
+        domain = os.getenv('DOMAIN')
+
+        msg_html = render_to_string('mail.html', {"domain": domain,
+                                                  'uid': user.pk,
+                                                  'token':token})
+
+        send_mail('Activate account',
+                  'Here is the message.',
+                  'Authors Haven',
+                  [email],
+                  html_message=msg_html,
+                  fail_silently=False,
+
+                  )
+
         return user
 
     def create_superuser(self, username, email, password):
@@ -45,6 +66,7 @@ class UserManager(BaseUserManager):
       user = self.create_user(username, email, password)
       user.is_superuser = True
       user.is_staff = True
+      user.is_active = True
       user.save()
 
       return user
@@ -116,5 +138,4 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
-
 
