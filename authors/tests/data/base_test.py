@@ -1,5 +1,7 @@
+import os
 from django.test import TestCase
 from rest_framework.test import APIClient
+from PIL import Image
 from .data import Data
 
 
@@ -100,8 +102,56 @@ class BaseTest(TestCase):
                 format="json"
             )
 
-    def login_user_and_get_token(self):
-        res = self.login_user()
+    def login_user_and_get_token(self, data=""):
+        res = self.login_user(data) if data else self.login_user()
         token = res.data['token']
 
         return token
+
+    def fetch_user_profile(self, username):
+        """
+        This method 'fetch_user_profile'
+        fetches accepts a username and
+        fetches a profile with the username
+        """
+
+        return self.client.get(
+            "/api/profiles/{}".format(username),
+            format="json"
+        )
+
+    def generate_image(self):
+        """
+        This method 'generate_image'
+        generates and returns an image
+        """
+
+        module_dir = os.path.dirname(__file__)
+        file_path = os.path.join(module_dir, 'test_files/test.png')
+        tempfile = Image.open(file_path)
+        image = Image.new('RGB', (100, 100))
+        image = image.save('test.png')
+
+        return image
+
+    def update_user_profile(self, username, data='', token='', image=None):
+        """
+        This method 'update_user_profile'
+        updates user profile with the
+        details provided.
+        """
+
+        data, content_type = data or self.base_data.profile_data, 'json'
+
+        if image is not None:
+
+            content_type = "multipart"
+
+            data.update({"image": image})
+
+        return self.client.put(
+            "/api/profiles/{}".format(username),
+            data,
+            format=content_type,
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )
