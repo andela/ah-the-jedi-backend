@@ -15,7 +15,7 @@ from .backends import handle_token
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer,
+    LoginSerializer, RegistrationSerializer,
     UserSerializer, UidAndTokenSerializer
 )
 from authors.apps.authentication.models import User
