@@ -10,7 +10,8 @@ from .backends import handle_token
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer, UidAndTokenSerializer
+    LoginSerializer, RegistrationSerializer,
+    UserSerializer, UidAndTokenSerializer
 )
 from authors.apps.authentication.models import User
 from authors.apps.core import exceptions

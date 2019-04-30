@@ -5,4 +5,7 @@ omit =
     config/*
     test/*
     manage.py
-    
+    authors/apps/profiles/utils.py 
+    authors/wsgi.py 
+    authors/apps/profiles/permissions.py 
+    authors/apps/profiles/apps.py
