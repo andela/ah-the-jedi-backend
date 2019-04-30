@@ -1,6 +1,7 @@
 import cloudinary.uploader
 import datetime
 from rest_framework.response import Response
+from .models import User
 
 
 def ImageUploader(image):
@@ -36,3 +37,43 @@ def ImageUploader(image):
     except Exception as e:
         return {"status": e.status_code,
                 "error": e.__dict__}
+
+
+def user_object(uid):
+    """
+    Function for getting user object
+    """
+    instance = User.objects.filter(id=uid)[0]
+    user = {
+        'id': instance.id,
+        'email': instance.email,
+        'username': instance.username,
+    }
+
+    try:
+        user.bio = instance.bio
+    except:
+        pass
+    try:
+        user.following = instance.following
+    except:
+        pass
+    try:
+        user.image = instance.image
+    except:
+        pass
+
+    return user
+
+
+def configure_response(serializer):
+    """Function to configure response with a user information"""
+
+    dictionary = None
+    data = []
+    for comment in serializer.data:
+        dictionary = dict(comment)
+        dictionary['author'] = user_object(dictionary['user_id'])
+        del dictionary['user_id']
+        data.append(dictionary)
+    return data

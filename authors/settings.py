@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'corsheaders',
     'cloudinary',
     'django_extensions',
@@ -52,7 +53,15 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'social_django',
     'rest_framework_social_oauth2',
+    'fluent_comments',
+    'threadedcomments',
+    'django_comments',
 ]
+
+COMMENTS_APP = 'fluent_comments'
+FLUENT_COMMENTS_FORM_CLASS = 'fluent_comments.forms.CompactLabelsCommentForm'
+FLUENT_COMMENTS_EXCLUDE_FIELDS = ('name', 'email', 'url', 'title')
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -44,7 +44,6 @@ class SignupUserViewCase(BaseTest):
         """
 
         new_user = self.signup_user()
-        # print(new_user.data)
 
         self.assertEqual(
             new_user.status_code,
