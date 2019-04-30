@@ -31,8 +31,8 @@ class UserLoginTest(BaseTest):
         BaseTest.setUp(self)
 
         signup = self.signup_user()
-        uid = signup.data.get('id')
-        token = signup.data.get('token')
+        uid = signup.data.get('data')['id']
+        token = signup.data.get('data')['token']
 
         self.activate_user(uid=uid, token=token)
 
