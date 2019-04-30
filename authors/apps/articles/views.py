@@ -1,12 +1,12 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions, status, views, viewsets
+from rest_framework import generics, permissions, status, views, viewsets, serializers
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import permission_classes
-from .serializers import ArticleSerializer, TABLE
+from .serializers import ArticleSerializer, TABLE, CommentSerializer
 from django.contrib.auth.models import User
 from ..authentication.models import User
-from .models import ArticleModel
+from .models import ArticleModel, Comment
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
 )
@@ -86,7 +86,7 @@ class ArticleView(viewsets.ModelViewSet):
         data = []
         for article in serializer.data:
             dictionary = dict(article)
-            dictionary['author'] = self.user_object(dictionary['author'])
+            dictionary['author'] = ArticleView.user_object(dictionary['author'])
             data.append(dictionary)
 
         return JsonResponse({"status": 200,
@@ -107,7 +107,7 @@ class ArticleView(viewsets.ModelViewSet):
         serializer = ArticleSerializer(article,
                                        context={'request': request})
         response = Response(serializer.data)
-        response.data['author'] = self.user_object(serializer.data['author'])
+        response.data['author'] = ArticleView.user_object(serializer.data['author'])
         return JsonResponse({"status": 200,
                              "data": response.data},
                             status=200)
@@ -141,7 +141,7 @@ class ArticleView(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         response = Response(serializer.data)
-        response.data['author'] = self.user_object(serializer.data['author'])
+        response.data['author'] = ArticleView.user_object(serializer.data['author'])
         return Response({"status": 201,
                          "data": response.data},
                         status=201)
@@ -173,7 +173,7 @@ class ArticleView(viewsets.ModelViewSet):
         """
         request.data['author'] = request.user.id
         response = super().create(request)
-        response.data['author'] = self.user_object(response.data['author'])
+        response.data['author'] = ArticleView.user_object(response.data['author'])
         return Response({"status": 201, "data": response.data}, status=201)
 
     def check_if_duplicate(self, userid, title1, body1):
@@ -203,12 +203,13 @@ class ArticleView(viewsets.ModelViewSet):
             request.data['image'] = image_url
             return self.create_article(request)
 
-    def user_object(self, uid):
+    @staticmethod
+    def user_object(uid):
         """
         Function for getting user object
         """
         instance = User.objects.filter(id=uid)[0]
-
+        print(instance)
         user = {
             'id': instance.id,
             'email': instance.email,
@@ -229,3 +230,49 @@ class ArticleView(viewsets.ModelViewSet):
             pass
 
         return user
+
+
+class CommentView(viewsets.ModelViewSet):
+
+    permission_classes = (IsAuthenticated,)
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    lookup_field = 'slug'
+
+    def create(self, request, *args, **kwargs):
+
+        body = request.data.get('comment', {})
+
+        serializer = CommentSerializer(data=body)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        response = Response(serializer.data)
+        response.data['author'] = ArticleView.user_object(request.user.id)
+
+        return Response(response.data,
+                        status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+
+        serializer.save(user=self.request.user,
+                        article=ArticleModel.objects.get(
+                            slug=self.kwargs.get('slug'))
+                        )
+
+    def list(self, request, *args, **kwargs):
+
+        queryset = Comment.objects.filter(
+            article_id=self.kwargs.get('slug'))
+
+        serializer = CommentSerializer(queryset, many=True)
+        if queryset.count() == 0:
+            raise serializers.ValidationError("No comments found")
+
+        if queryset.count() == 1:
+            return Response({"Comment": serializer.data})
+
+        return Response(
+            {"Comments": serializer.data,
+             "commentsCount": queryset.count()})

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone, tzinfo
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
@@ -40,3 +41,17 @@ class ArticleModel(models.Model):
 
     class Meta:
         ordering = ["-createdAt"]
+
+
+class Comment(models.Model):
+
+    created_at = models.DateTimeField(default=datetime.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(
+        'authentication.User',
+        on_delete=models.CASCADE
+    )
+    article = models.ForeignKey(
+        'ArticleModel', on_delete=models.CASCADE, to_field="slug", blank=False
+    )
+    body = models.TextField(max_length=500)
