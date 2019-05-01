@@ -100,6 +100,3 @@ db.sqlite3
 # Pipfile
 Pipfile
 Pipfile.lock
-
-#DS_Store files
-.DS_Store

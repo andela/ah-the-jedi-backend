@@ -1,13 +1,8 @@
-import os
-import datetime
-import re
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import status, generics, permissions, views
-from rest_framework.generics import (
-    RetrieveUpdateAPIView, GenericAPIView
-)
+from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,9 +15,6 @@ from .serializers import (
 )
 from authors.apps.authentication.models import User
 from authors.apps.core import exceptions
-from django.template.loader import render_to_string
-from django.core.mail import send_mail
-from django.core.exceptions import ObjectDoesNotExist
 
 
 class RegistrationAPIView(GenericAPIView):
@@ -139,100 +131,3 @@ class ActivationView(generics.GenericAPIView):
         }
 
         return Response(data=response_data, status=status.HTTP_200_OK)
-
-
-class ResetPasswordView(GenericAPIView):
-    """
-    post:
-    Request password reset Link.
-    """
-    serializer_class = UidAndTokenSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        email = request.data.get("email", "")
-
-        if not email:
-            return Response({
-                "error": "Email field is required"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        elif not re.match(r"(^[a-zA-z0-9_.]+@[a-zA-z0-9-]+\.[a-z]+$)",
-                          email):
-            return Response({
-                "error": "Please enter a valid email address"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        error_response = {
-            "message": "Account with this email not found."
-        }
-        try:
-            user = User.objects.get(email=email)
-        except ObjectDoesNotExist:
-            return Response(data=error_response,
-                            status=status.HTTP_404_NOT_FOUND)
-
-        token = default_token_generator.make_token(user)
-        domain = os.getenv('DOMAIN')
-
-        msg_html = render_to_string('reset_password.html', {"domain": domain,
-                                                            'uid': user.pk,
-                                                            'token': token}
-                                    )
-
-        success_response = {
-            "message": "Password reset link has been sent to your email, "
-            "check your email for instructions on how to change password",
-            "uid": user.pk,
-            "token": token
-        }
-
-        send_mail('Reset Password',
-                  'Here is the message.',
-                  'Authors Haven',
-                  [email],
-                  html_message=msg_html,
-                  fail_silently=False,
-
-                  )
-
-        return Response(data=success_response, status=status.HTTP_200_OK)
-
-
-class ResetPasswordAPIView(GenericAPIView):
-    """Patch: Reset Password """
-    renderer_classes = (UserJSONRenderer,)
-    serializer_class = UidAndTokenSerializer
-
-    def patch(self, request):
-
-        uid = request.GET.get("uid", "")
-        token = request.GET.get("token", "")
-
-        password = request.data.get("password", "")
-
-        if not password:
-            return Response({
-                "error": "Password field is required"
-            }, status=status.HTTP_400_BAD_REQUEST)
-        elif not re.match(r"(^[a-zA-Z0-9]{8,}$)",
-                          password):
-            return Response({
-                "error": "A password should be only Aplhanumeric "
-                "characters and a minimum of 8 characters"
-            }, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            serializer = self.serializer_class(
-                data={"uid": uid, "token": token})
-            serializer.is_valid(raise_exception=True)
-
-            user = User.objects.get(id=uid)
-            user.set_password(password)
-            user.save()
-
-            response_data = {
-                "message":
-                "Your account password has been changed successfully."
-            }
-
-            return Response(data=response_data, status=status.HTTP_200_OK)
