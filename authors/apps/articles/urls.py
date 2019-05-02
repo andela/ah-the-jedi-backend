@@ -8,5 +8,6 @@ router.register('articles', ArticleView)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('articles/<slug>/comments/', CommentView.as_view({'post': 'create', 'get': 'list'})),
+    path('articles/<slug>/comments/', CommentView.as_view({'post': 'create',
+                                                           'get': 'list'})),
 ]

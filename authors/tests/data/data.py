@@ -69,3 +69,7 @@ class Data:
             'title': 'Second test data',
             'description': 'This is the second test data',
         }
+
+        self.comment_data = {
+            "comment": "I like this article"
+        }

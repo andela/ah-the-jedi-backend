@@ -6,10 +6,11 @@ from rest_framework.decorators import permission_classes
 from .serializers import ArticleSerializer, TABLE, CommentSerializer
 from django.contrib.auth.models import User
 from ..authentication.models import User
-from .models import ArticleModel, Comment
+from .models import ArticleModel
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
 )
+from django.utils import timezone
 from django.http import JsonResponse
 from django.core.files.storage import FileSystemStorage
 import json
@@ -18,6 +19,9 @@ import smtplib
 from django.conf import settings
 from .utils import ImageUploader
 from django.apps import apps
+from fluent_comments.models import FluentComment
+from django.contrib.contenttypes.models import ContentType
+from .utils import user_object, configure_response
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -86,7 +90,7 @@ class ArticleView(viewsets.ModelViewSet):
         data = []
         for article in serializer.data:
             dictionary = dict(article)
-            dictionary['author'] = ArticleView.user_object(dictionary['author'])
+            dictionary['author'] = user_object(dictionary['author'])
             data.append(dictionary)
 
         return JsonResponse({"status": 200,
@@ -107,7 +111,7 @@ class ArticleView(viewsets.ModelViewSet):
         serializer = ArticleSerializer(article,
                                        context={'request': request})
         response = Response(serializer.data)
-        response.data['author'] = ArticleView.user_object(serializer.data['author'])
+        response.data['author'] = user_object(serializer.data['author'])
         return JsonResponse({"status": 200,
                              "data": response.data},
                             status=200)
@@ -141,7 +145,7 @@ class ArticleView(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         response = Response(serializer.data)
-        response.data['author'] = ArticleView.user_object(serializer.data['author'])
+        response.data['author'] = user_object(serializer.data['author'])
         return Response({"status": 201,
                          "data": response.data},
                         status=201)
@@ -173,7 +177,7 @@ class ArticleView(viewsets.ModelViewSet):
         """
         request.data['author'] = request.user.id
         response = super().create(request)
-        response.data['author'] = ArticleView.user_object(response.data['author'])
+        response.data['author'] = user_object(response.data['author'])
         return Response({"status": 201, "data": response.data}, status=201)
 
     def check_if_duplicate(self, userid, title1, body1):
@@ -203,76 +207,90 @@ class ArticleView(viewsets.ModelViewSet):
             request.data['image'] = image_url
             return self.create_article(request)
 
-    @staticmethod
-    def user_object(uid):
-        """
-        Function for getting user object
-        """
-        instance = User.objects.filter(id=uid)[0]
-        print(instance)
-        user = {
-            'id': instance.id,
-            'email': instance.email,
-            'username': instance.username,
-        }
-
-        try:
-            user.bio = instance.bio
-        except:
-            pass
-        try:
-            user.following = instance.following
-        except:
-            pass
-        try:
-            user.image = instance.image
-        except:
-            pass
-
-        return user
-
 
 class CommentView(viewsets.ModelViewSet):
-
-    permission_classes = (IsAuthenticated,)
-    queryset = Comment.objects.all()
+    """
+    The Comment view
+    """
+    queryset = FluentComment.objects.all()
     serializer_class = CommentSerializer
     lookup_field = 'slug'
 
     def create(self, request, *args, **kwargs):
+        """
+        post:
+        The create a comment endpoint
+        """
+        if request.user.is_authenticated:
 
-        body = request.data.get('comment', {})
+            data = self.request.data
+            comment = data['comment']
 
-        serializer = CommentSerializer(data=body)
-        serializer.is_valid(raise_exception=True)
+            slug = self.kwargs.get('slug')
+            slug_exists = ArticleModel.objects.filter(slug=slug)
+            if not slug_exists:
+                return JsonResponse(
+                    {'status': 404,
+                     'error': 'Article with slug {} not found'.format(slug)},
+                    status=404)
 
-        self.perform_create(serializer)
+            parent = request.GET.get('parent_id')
+            if parent:
+                parent_exists = FluentComment.objects.filter(pk=parent, object_pk=slug)
+                if not parent_exists:
+                    return JsonResponse(
+                        {'status': 404,
+                         'error': 'No comment with id {} found for article with slug {}'.format(parent, slug)},
+                        status=404)
 
-        response = Response(serializer.data)
-        response.data['author'] = ArticleView.user_object(request.user.id)
+            submit_date = timezone.now()
+            content = ContentType.objects.get(model='user').pk
+            comment = FluentComment.objects.create(object_pk=slug,
+                                                   comment=comment,
+                                                   submit_date=submit_date,
+                                                   content_type_id=content,
+                                                   user_id=self.request.user.id,
+                                                   site_id=settings.SITE_ID,
+                                                   parent_id=parent)
 
-        return Response(response.data,
-                        status=status.HTTP_201_CREATED)
+            serializer = CommentSerializer(comment, context={'request': request})
 
-    def perform_create(self, serializer):
-
-        serializer.save(user=self.request.user,
-                        article=ArticleModel.objects.get(
-                            slug=self.kwargs.get('slug'))
-                        )
+            response = Response(serializer.data)
+            response.data['author'] = user_object(request.user.id)
+            del response.data['user_id']
+            return Response(response.data,
+                            status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
+        """
+        get:
+        The list all comments for an article endpoint
+        """
+        slug = self.kwargs.get('slug')
+        slug_exists = ArticleModel.objects.filter(slug=slug)
+        if not slug_exists:
+            return JsonResponse(
+                {'status': 404,
+                 'error': 'Article with slug {} not found'.format(slug)},
+                status=404)
 
-        queryset = Comment.objects.filter(
-            article_id=self.kwargs.get('slug'))
-
+        queryset = FluentComment.objects.filter(object_pk=slug)
         serializer = CommentSerializer(queryset, many=True)
+
         if queryset.count() == 0:
-            raise serializers.ValidationError("No comments found")
+            return JsonResponse(
+                {'status': 404,
+                 'error': "No comments yet on this article".format(slug)},
+                status=404)
 
         if queryset.count() == 1:
-            return Response({"Comment": serializer.data})
+            response = Response(serializer.data)
+            response = dict(response.data[0].items())
+            response['author'] = user_object(response['user_id'])
+            del response['user_id']
+            return Response({"Comment": response})
 
+        data = configure_response(serializer)
         return Response(
-            {"Comments": serializer.data,
+            {"Comments": data,
              "commentsCount": queryset.count()})

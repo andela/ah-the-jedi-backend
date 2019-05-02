@@ -12,11 +12,6 @@ import cloudinary
 import datetime
 import environ
 
-<<<<<<< HEAD
-import cloudinary
-
-=======
->>>>>>> [Finishes #165305266] implemented create article CRUD
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -44,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'corsheaders',
     'cloudinary',
     'django_extensions',
@@ -53,8 +49,16 @@ INSTALLED_APPS = [
     'authors.apps.profiles',
     'rest_framework_swagger',
     'mailer',
-    'authors.apps.articles'
+    'authors.apps.articles',
+    'fluent_comments',
+    'threadedcomments',
+    'django_comments',
 ]
+
+COMMENTS_APP = 'fluent_comments'
+FLUENT_COMMENTS_FORM_CLASS = 'fluent_comments.forms.CompactLabelsCommentForm'
+FLUENT_COMMENTS_EXCLUDE_FIELDS = ('name', 'email', 'url', 'title')
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -219,7 +223,6 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
 
 
 # Cloudinary settings for Django. Add to your settings file.

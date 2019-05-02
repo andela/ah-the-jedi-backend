@@ -27,9 +27,6 @@ urlpatterns = [
                            'authentication'), namespace='authentication')),
     url(r'^api/', include(('authors.apps.profiles.urls',
                            'profiles'), namespace='profiles')),
-<<<<<<< HEAD
-=======
     path('api/', authentication_urls),
->>>>>>> [Finishes #165305266] implemented create article CRUD
     path('api/', articles_urls),
 ]
