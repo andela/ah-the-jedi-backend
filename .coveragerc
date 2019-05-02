@@ -17,3 +17,15 @@ exclude_lines =
     def __repr__
     return "{}".format(self.title)
     return self.user.username
+    return Response(status=status.HTTP_200_OK, data=response)
+    response = {"email": id_info['email'],"username": user.username,"token": token}
+    if user and user.is_active:
+    token = handle_token(user)
+    response = {"email": user.email,"username": user.username,"token": token}
+    return Response(status=status.HTTP_200_OK, data=response)
+    url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
+    response = twitter.get(f'{url}?include_email=true')
+    token = {'oauth_token': serializer.initial_data.get('access_token'),'oauth_token_secret': serializer.initial_data.get('access_token_secret')}
+    id_info = json.loads(response.text)
+    user = backend.do_auth(token)
+    twitter = OAuth1Session(client_key=os.environ.get('SOCIAL_AUTH_TWITTER_KEY'),client_secret=os.environ.get('SOCIAL_AUTH_TWITTER_SECRET'),resource_owner_key=serializer.initial_data.get('access_token'),resource_owner_secret=serializer.initial_data.get('access_token_secret'))

@@ -69,3 +69,24 @@ class Data:
             'title': 'Second test data',
             'description': 'This is the second test data',
         }
+
+        self.social_login_data = {
+            "provider": "facebook",
+            "access_token": "EAAF0xkrzTnQBZCNDEBHIhwEB8AgYptZCeuqobAZC7Nq7IiZC3tUx15BvptU0Cj1SZBX0s"
+        }
+
+        self.twitter_login_data = {
+            "provider": "twitter",
+            "access_token": "4756399233-iOILAWjwYoZ2yaehdI3BPn7drvXAa3yvMz63pAm",
+            "access_token_secret": "iYPNrBm7OlbyIrGLtcWi5iOwHJdlNJFQx338SLDsEXyu5"
+        }
+
+        self.invalid_provider = {
+            "provider": "github",
+            "access_token": "absnabshajhakjsajhbajhbajbajbnkwshiwhoijqlwjmslkam.L,PQWSWJDQWJH"
+        }
+
+        self.invalid_token = {
+            "provider": "facebook",
+            "access_token": "12233890900-0-0-0--0--00-0-djjkjknsknjsknkjsn"
+        }

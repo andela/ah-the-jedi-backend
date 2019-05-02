@@ -45,6 +45,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def get_token(self, token):
         return default_token_generator.make_token(token)
 
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
     username = serializers.CharField(max_length=255, read_only=True)
@@ -188,4 +189,15 @@ class UidAndTokenSerializer(serializers.Serializer):
             self.fail('invalid_token')
 
         return attrs
-        
+
+
+class SocialSerializer(serializers.Serializer):
+    """
+    Serializer which accepts an social oauth access token and provider.
+    """
+
+    provider = serializers.CharField(max_length=255, required=True)
+    access_token = serializers.CharField(
+        max_length=4096, required=True, trim_whitespace=True)
+    access_token_secret = serializers.CharField(
+        max_length=255, allow_blank=True, default="")
