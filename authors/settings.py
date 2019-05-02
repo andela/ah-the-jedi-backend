@@ -12,6 +12,7 @@ import cloudinary
 import datetime
 import environ
 
+import cloudinary
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
@@ -40,23 +41,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'corsheaders',
+    'cloudinary',
     'django_extensions',
     'rest_framework',
-
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
     'rest_framework_swagger',
-
-    'mailer'
+    'mailer',
+    'authors.apps.articles'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # 'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -210,12 +209,15 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+
 
 # Cloudinary settings for Django. Add to your settings file.
 
