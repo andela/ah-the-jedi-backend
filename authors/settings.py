@@ -12,8 +12,6 @@ import cloudinary
 import datetime
 import environ
 
-import cloudinary
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'corsheaders',
     'cloudinary',
     'django_extensions',
@@ -54,7 +53,15 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'social_django',
     'rest_framework_social_oauth2',
+    'fluent_comments',
+    'threadedcomments',
+    'django_comments',
 ]
+
+COMMENTS_APP = 'fluent_comments'
+FLUENT_COMMENTS_FORM_CLASS = 'fluent_comments.forms.CompactLabelsCommentForm'
+FLUENT_COMMENTS_EXCLUDE_FIELDS = ('name', 'email', 'url', 'title')
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -229,7 +236,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 
-
 # Cloudinary settings for Django. Add to your settings file.
 
 CLOUDINARY_NAME = env.str('CLOUDINARY_CLOUD_NAME')
@@ -277,6 +283,6 @@ SOCIAL_AUTH_PIPELINE = (
 
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-SOCIAL_AUTH_TWITTER_KEY=os.getenv('SOCIAL_AUTH_TWITTER_KEY')
-SOCIAL_AUTH_TWITTER_SECRET=os.getenv('SOCIAL_AUTH_TWITTER_SECRET')
+SOCIAL_AUTH_TWITTER_KEY = os.getenv('SOCIAL_AUTH_TWITTER_KEY')
+SOCIAL_AUTH_TWITTER_SECRET = os.getenv('SOCIAL_AUTH_TWITTER_SECRET')
 SOCIAL_AUTH_TWITTER_SCOPE = ['email']

@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
@@ -32,8 +33,6 @@ class ArticleModel(models.Model):
         blank=True,
         default=None
     )
-
-    # author = models.ForeignKey('auth.User', related_name='author', on_delete=models.CASCADE,)
 
     def __str__(self):
         return "{}".format(self.title)  # pragma: no cover

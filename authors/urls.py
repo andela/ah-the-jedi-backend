@@ -27,6 +27,7 @@ urlpatterns = [
                            'authentication'), namespace='authentication')),
     url(r'^api/', include(('authors.apps.profiles.urls',
                            'profiles'), namespace='profiles')),
+    path('api/', authentication_urls),
     path('api/', articles_urls),
     path('api/users/social/', include('rest_framework_social_oauth2.urls')),
 ]

@@ -73,7 +73,6 @@ class ModelTestCase(BaseTest):
         self.assertEqual(response.status_code,
                          status.HTTP_201_CREATED)
 
-
     def test_cannot_create_duplicate_article(self, token=''):
         """
         Test can create an article
@@ -84,10 +83,10 @@ class ModelTestCase(BaseTest):
                 self.base_data.user_data)
 
         self.client.post('/api/articles/',
-                            self.base_data.article_data,
-                            HTTP_AUTHORIZATION='Bearer ' +
-                            token,
-                            format='json')
+                         self.base_data.article_data,
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         token,
+                         format='json')
 
         response = self.client.post('/api/articles/',
                                     self.base_data.article_data,
@@ -97,7 +96,6 @@ class ModelTestCase(BaseTest):
 
         self.assertEqual(response.status_code,
                          status.HTTP_409_CONFLICT)
-
 
     def test_can_upload_image(self, token=''):
         """
@@ -316,7 +314,6 @@ class ModelTestCase(BaseTest):
                                          format='json')
 
         article_slug = post_response.data['data']['slug']
-        print('sluuuuuuug', article_slug)
 
         response = self.client.delete('/api/articles/{}/'.format(article_slug),
                                       HTTP_AUTHORIZATION='Bearer ' +

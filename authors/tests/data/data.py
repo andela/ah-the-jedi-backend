@@ -90,3 +90,6 @@ class Data:
             "provider": "facebook",
             "access_token": "12233890900-0-0-0--0--00-0-djjkjknsknjsknkjsn"
         }
+        self.comment_data = {
+            "comment": "I like this article"
+        }
