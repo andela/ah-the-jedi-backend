@@ -154,4 +154,61 @@ class BaseTest(TestCase):
             data,
             format=content_type,
             HTTP_AUTHORIZATION='Bearer ' + token
+
+        )
+
+    def follow_user(self, username='', token=''):
+        """
+        This method 'follow_user'
+        follows a user given the
+        username
+        """
+
+        username = username or self.base_data.user_data['username']
+
+        return self.client.post(
+            "/api/profiles/{}/follow".format(username),
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )
+
+    def unfollow_user(self, username='', token=''):
+        """
+        This method 'unfollow_user'
+        unfollows a user given the
+        username
+        """
+
+        username = username or self.base_data.user_data['username']
+
+        return self.client.delete(
+            "/api/profiles/{}/unfollow".format(username),
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )
+
+    def fetch_followers(self, token=''):
+        """
+        This method 'fetch_followers'
+        gets the followers of a given
+        user provided a username
+        """
+
+        return self.client.get(
+            "/api/user/followers",
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )
+
+    def fetch_following(self, token=''):
+        """
+        This method 'fetch_following'
+        gets the users that the current
+        authenticated user follows
+        """
+
+        return self.client.get(
+            "/api/user/following",
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
         )

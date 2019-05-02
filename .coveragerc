@@ -10,6 +10,8 @@ omit =
     authors/apps/profiles/permissions.py
     authors/apps/profiles/apps.py
     authors/apps/articles/apps.py
+    authors/apps/follows/apps.py
+    
 
 [report]
 exclude_lines =
