@@ -203,6 +203,7 @@ class ResetPasswordAPIView(GenericAPIView):
     """Patch: Reset Password """
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UidAndTokenSerializer
+    permission_classes = [permissions.AllowAny]
 
     def patch(self, request):
 
@@ -211,6 +212,7 @@ class ResetPasswordAPIView(GenericAPIView):
 
         password = request.data.get("password", "")
 
+        # now we validate the password
         if not password:
             return Response({
                 "error": "Password field is required"
