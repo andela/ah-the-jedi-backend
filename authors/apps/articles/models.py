@@ -34,10 +34,8 @@ class ArticleModel(models.Model):
         default=None
     )
 
-    # author = models.ForeignKey('auth.User', related_name='author', on_delete=models.CASCADE,)
-
     def __str__(self):
-        return "{}".format(self.title)
+        return "{}".format(self.title)  # pragma: no cover
 
     class Meta:
         ordering = ["-createdAt"]

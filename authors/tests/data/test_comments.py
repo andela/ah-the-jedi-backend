@@ -109,3 +109,71 @@ class CommentTestCase(BaseTest):
         self.assertEqual(
             comment['error'], 'No comment with id 12345 found for article with slug first-test-data')
         self.assertEqual(comment['status'], 404)
+
+    def test_get_a_comment_for_article(self):
+        """
+        Test a user can get a comment for an article
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        self.client.post('/api/articles/{}/comments/'.format(slug),
+                         self.base_data.comment_data,
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         self.token,
+                         format='json')
+
+        comments = self.client.get('/api/articles/{}/comments/'.format(slug),
+                                   self.base_data.comment_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.token,
+                                   format='json')
+
+        comments_data = json.loads(comments.content.decode('utf-8'))
+        self.assertTrue(comments_data)
+        self.assertEqual(comments.status_code, 200)
+
+    def test_get_all_comments_for_article(self):
+        """
+        Test a user can get all comments for an article
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        self.client.post('/api/articles/{}/comments/'.format(slug),
+                         self.base_data.comment_data,
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         self.token,
+                         format='json')
+        self.client.post('/api/articles/{}/comments/'.format(slug),
+                         self.base_data.comment_data,
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         self.token,
+                         format='json')
+
+        comments = self.client.get('/api/articles/{}/comments/'.format(slug),
+                                   self.base_data.comment_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.token,
+                                   format='json')
+
+        comments_data = json.loads(comments.content.decode('utf-8'))
+        self.assertTrue(comments_data)
+        self.assertEqual(comments.status_code, 200)
+
+    def test_get_comments_for_article_with_no_comments(self):
+        """
+        Test a user tries to get comments for an article that has no comment
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+
+        comments = self.client.get('/api/articles/{}/comments/'.format(slug),
+                                   self.base_data.comment_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.token,
+                                   format='json')
+
+        comments_data = json.loads(comments.content.decode('utf-8'))
+        self.assertEqual(comments.status_code, 404)

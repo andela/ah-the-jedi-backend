@@ -106,7 +106,7 @@ class ArticleView(viewsets.ModelViewSet):
             article = ArticleModel.objects.filter(slug=slug)[0]
         except:
             return JsonResponse({"status": 404,
-                                 "error": "Intervention with slug {} not found".format(slug)},
+                                 "error": "Article with slug {} not found".format(slug)},
                                 status=404)
         serializer = ArticleSerializer(article,
                                        context={'request': request})
