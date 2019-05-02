@@ -16,13 +16,28 @@ from .backends import handle_token
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer,
-    UserSerializer, UidAndTokenSerializer
+    UserSerializer, UidAndTokenSerializer, SocialSerializer
 )
 from authors.apps.authentication.models import User
 from authors.apps.core import exceptions
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
+
+from django.http import JsonResponse
+from django.contrib.auth import get_user_model
+from rest_framework import generics, permissions, status, views
+from requests.exceptions import HTTPError
+from social_django.utils import load_strategy, load_backend
+from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from authors import settings
+from requests_oauthlib import OAuth1Session
+import json
+
+User = get_user_model()
 
 
 class RegistrationAPIView(GenericAPIView):
@@ -238,3 +253,70 @@ class ResetPasswordAPIView(GenericAPIView):
             }
 
             return Response(data=response_data, status=status.HTTP_200_OK)
+
+
+class SocialLoginView(generics.GenericAPIView):
+
+    """Log in using social accounts"""
+    serializer_class = SocialSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        """Authenticate user through the provider and access_token"""
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        providers = ["facebook", "google-oauth2", "twitter"]
+        provider = request.data.get('provider', None)
+
+        if provider not in providers:
+            return Response({'error': "Provider not supported, Please use 'google-oauth2',"
+                             "'facebook', or 'twitter'."""},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        strategy = load_strategy(request)
+        backend = load_backend(strategy=strategy, name=provider,
+                               redirect_uri=None)
+
+        try:
+            if isinstance(backend, BaseOAuth1):
+                token = {
+                    'oauth_token': serializer.initial_data.get('access_token'),
+                    'oauth_token_secret': serializer.initial_data.get('access_token_secret')
+                } # pragma: no cover
+                user = backend.do_auth(token)# pragma: no cover
+                url = 'https://api.twitter.com/1.1/account/verify_credentials.json' # pragma: no cover
+                twitter = OAuth1Session(client_key=os.environ.get('SOCIAL_AUTH_TWITTER_KEY'),
+                                        client_secret=os.environ.get(
+                                            'SOCIAL_AUTH_TWITTER_SECRET'),
+                                        resource_owner_key=serializer.initial_data.get(
+                                            'access_token'),
+                                        resource_owner_secret=serializer.initial_data.get('access_token_secret'
+                                                                                          ))# pragma: no cover
+                response = twitter.get(f'{url}?include_email=true') # pragma: no cover
+                id_info = json.loads(response.text) # pragma: no cover
+                if user and user.is_active:
+                    token = handle_token(user)
+                    response = {
+                        "email": id_info['email'],
+                        "username": user.username,
+                        "token": token
+                    }  # pragma: no cover
+                    return Response(status=status.HTTP_200_OK, data=response)  # pragma: no cover
+            elif isinstance(backend, BaseOAuth2):
+                access_token = request.data.get('access_token')
+                user = backend.do_auth(access_token)
+        except BaseException as error:
+            return Response({
+                "error": {
+                    "access_token": "Invalid token",
+                    "details": str(error)
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if user and user.is_active:
+            token = handle_token(user)
+            response = {
+                "email": user.email,
+                "username": user.username,
+                "token": token
+            }  # pragma: no cover
+            return Response(status=status.HTTP_200_OK, data=response)  # pragma: no cover
