@@ -41,7 +41,12 @@ class ProfileRetreiveUpdateAPIView(RetrieveUpdateAPIView):
 
             raise NotFound(errors["profile_missing"])
 
-        serializer = self.serializer_class(user)
+        context = {
+            "request": request.user.username,
+            "username": username
+        }
+
+        serializer = self.serializer_class(user, context=context)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -69,8 +74,13 @@ class ProfileRetreiveUpdateAPIView(RetrieveUpdateAPIView):
 
         validate_image_upload(request)
 
+        context = {
+            "request": request.user.username,
+            "username": username
+        }
+
         serializer = self.serializer_class(
-            user, data=serializer_data, partial=True)
+            user, data=serializer_data, context=context,  partial=True)
 
         serializer.is_valid(raise_exception=True)
 

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
+    'authors.apps.follows',
     'rest_framework_swagger',
     'mailer',
     'authors.apps.articles',
