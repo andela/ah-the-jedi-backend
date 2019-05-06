@@ -56,6 +56,9 @@ class ArticleSerializer(serializers.ModelSerializer):
             'num_vote_down',
             'num_vote_up',
             'vote_score',
+            'twitter',
+            'facebook',
+            'mail',
         )
         lookup_field = 'slug'
         extra_kwargs = {'url': {'lookup_field': 'slug'}}

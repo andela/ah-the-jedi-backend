@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions, status, views, viewsets, serializers
+from rest_framework import (generics, permissions,
+                            status, views, viewsets, serializers)
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import permission_classes
@@ -18,15 +19,15 @@ import json
 from django.http.response import Http404
 import smtplib
 from django.conf import settings
-from .utils import ImageUploader
 from django.apps import apps
 from fluent_comments.models import FluentComment
 from django.contrib.contenttypes.models import ContentType
-from .utils import user_object, configure_response
 from rest_framework.generics import (
     RetrieveUpdateAPIView, GenericAPIView
 )
 from rest_framework.exceptions import ValidationError
+from .utils import (ImageUploader, user_object,
+                    configure_response, add_social_share)
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -105,6 +106,7 @@ class ArticleView(viewsets.ModelViewSet):
         data = []
         for article in serializer.data:
             dictionary = dict(article)
+            dictionary = add_social_share(dictionary)
             dictionary['author'] = user_object(dictionary['author'])
             data.append(dictionary)
 
@@ -125,6 +127,7 @@ class ArticleView(viewsets.ModelViewSet):
                                        context={'request': request})
         response = Response(serializer.data)
         response.data['author'] = user_object(serializer.data['author'])
+        response.data = add_social_share(response.data)
         return JsonResponse({"status": 200,
                              "data": response.data},
                             status=200)
@@ -159,6 +162,7 @@ class ArticleView(viewsets.ModelViewSet):
         serializer.save()
         response = Response(serializer.data)
         response.data['author'] = user_object(serializer.data['author'])
+        response.data = add_social_share(response.data)
         return Response({"status": 201,
                          "data": response.data},
                         status=201)
@@ -191,6 +195,7 @@ class ArticleView(viewsets.ModelViewSet):
         request.data['author'] = request.user.id
         response = super().create(request)
         response.data['author'] = user_object(response.data['author'])
+        response.data = add_social_share(response.data)
         return Response({"status": 201, "data": response.data}, status=201)
 
     def check_if_duplicate(self, userid, title1, body1):
@@ -423,7 +428,7 @@ class FavoriteArticle(viewsets.ModelViewSet):
             serializer = FavoriteArticleSerializer(queryset)
             article = serializer.data
             data.append(article)
-        return Response({'data':data})
+        return Response({'data': data})
 
     def destroy(self, request, slug=None, *args, **kwargs):
         """
