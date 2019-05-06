@@ -4,6 +4,8 @@ from .models import ArticleModel, FavoriteArticleModel
 from fluent_comments.models import FluentComment
 from .utils import user_object, configure_response
 from django.contrib.auth.models import AnonymousUser
+from django.db.models import Avg
+from authors.apps.ratings.models import Ratings
 
 TABLE = apps.get_model('articles', 'ArticleModel')
 
@@ -36,6 +38,10 @@ class ArticleSerializer(serializers.ModelSerializer):
     favorited = serializers.SerializerMethodField()
     favoritesCount = serializers.SerializerMethodField()
 
+    average_rating = serializers.SerializerMethodField(
+        method_name='rating',
+        read_only=True)
+
     class Meta:
         model = TABLE
         fields = (
@@ -50,6 +56,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'updatedAt',
             'favorited',
             'favoritesCount',
+            'average_rating',
             'author',
             'image',
             'comments',
@@ -99,6 +106,17 @@ class ArticleSerializer(serializers.ModelSerializer):
             article=obj).count()
         return favorited_articles
 
+    def rating(self, obj):
+        """
+        Get the average rating of an article
+        """
+        average_rate = Ratings.objects.filter(article=obj,
+                                              ).aggregate(rate=Avg('rating'))
+
+        if average_rate["rate"]:
+            return float('%.2f' % (average_rate["rate"]))
+        return 0
+
 
 class FavoriteArticleSerializer(serializers.ModelSerializer):
     """Favorite article serializer"""
@@ -123,4 +141,3 @@ class FavoriteArticleSerializer(serializers.ModelSerializer):
 
     def is_article(self, obj):
         return obj.article.slug
-

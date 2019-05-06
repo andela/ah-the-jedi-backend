@@ -106,3 +106,7 @@ class Data:
         self.comment_data = {
             "comment": "I like this article"
         }
+
+        self.rating_data = {
+            "rating": "5"
+        }

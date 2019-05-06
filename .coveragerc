@@ -11,6 +11,7 @@ omit =
     authors/apps/profiles/apps.py
     authors/apps/articles/apps.py
     authors/apps/follows/apps.py
+    authors/apps/ratings/apps.py
     
 
 [report]

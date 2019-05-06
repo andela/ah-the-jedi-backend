@@ -32,4 +32,5 @@ urlpatterns = [
     path('api/users/social/', include('rest_framework_social_oauth2.urls')),
     url(r'^api/', include(('authors.apps.follows.urls',
                            'follows'), namespace='follows')),
+    path('api/', include('authors.apps.ratings.urls'))
 ]
