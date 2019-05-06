@@ -33,3 +33,4 @@ exclude_lines =
     id_info = json.loads(response.text)
     user = backend.do_auth(token)
     twitter = OAuth1Session(client_key=os.environ.get('SOCIAL_AUTH_TWITTER_KEY'),client_secret=os.environ.get('SOCIAL_AUTH_TWITTER_SECRET'),resource_owner_key=serializer.initial_data.get('access_token'),resource_owner_secret=serializer.initial_data.get('access_token_secret'))
+    return [permission() for permission in self.permission_classes]

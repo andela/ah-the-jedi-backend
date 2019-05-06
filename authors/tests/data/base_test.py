@@ -212,3 +212,14 @@ class BaseTest(TestCase):
             format='json',
             HTTP_AUTHORIZATION='Bearer ' + token
         )
+
+    def create_article(self):
+        """
+        Method to create an article
+        """
+        article = self.client.post('/api/articles/',
+                                   self.base_data.article_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.token,
+                                   format='json')
+        return article

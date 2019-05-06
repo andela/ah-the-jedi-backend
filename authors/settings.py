@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'cloudinary',
     'django_extensions',
+    'vote',
     'rest_framework',
     'authors.apps.authentication',
     'authors.apps.core',
