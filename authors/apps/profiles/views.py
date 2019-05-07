@@ -1,6 +1,6 @@
 import json
 from django.http.response import Http404
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.exceptions import (ParseError, NotFound)
 from rest_framework.response import Response
@@ -87,3 +87,14 @@ class ProfileRetreiveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ListProfilesView(APIView):
+
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ProfileSerializer
+
+    def get(self, request):
+        queryset = UserProfile.objects.all()
+        serializer = ProfileSerializer(queryset, many=True)
+        return Response(serializer.data)
