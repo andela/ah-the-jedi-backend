@@ -10,6 +10,7 @@ from .models import ArticleModel, FavoriteArticleModel
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
 )
+
 from django.utils import timezone
 from django.http import JsonResponse
 from django.core.files.storage import FileSystemStorage
@@ -22,13 +23,10 @@ from django.apps import apps
 from fluent_comments.models import FluentComment
 from django.contrib.contenttypes.models import ContentType
 from .utils import user_object, configure_response
-<<<<<<< HEAD
 from rest_framework.generics import (
     RetrieveUpdateAPIView, GenericAPIView
 )
-=======
 from rest_framework.exceptions import ValidationError
->>>>>>> feat(favorite): implement favorite and unfavorite endpoints
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -371,17 +369,21 @@ class DisLikeView(GenericAPIView):
         return JsonResponse({"status": 200,
                              "message": "You have deleted this dislike", },
                             status=200)
-class FavoriteArticle(generics.GenericAPIView):
+
+
+class FavoriteArticle(viewsets.ModelViewSet):
     """Favorite an article"""
     permission_classes = [IsAuthenticated]
     serializer_class = FavoriteArticleSerializer
 
-    def post(self, request, *args, **kwargs):
-        """Create favorite"""
+    def create(self, request, *args, **kwargs):
+        """
+        post:
+        Create favorite endpoint
+        """
         slug = self.kwargs.get('slug')
         article = ArticleModel.objects.all().filter(slug=slug).first()
         user = request.user
-        fav = request.data
 
         if article is None:
             response = {
@@ -398,9 +400,10 @@ class FavoriteArticle(generics.GenericAPIView):
         try:
             existing_favorite = FavoriteArticleModel.objects.get(
                 article=article, favoritor=request.user)
-            serializer = self.serializer_class(existing_favorite, data=fav)
+            serializer = self.serializer_class(
+                existing_favorite, data=request.data)
         except FavoriteArticleModel.DoesNotExist:
-            serializer = self.serializer_class(data=fav)
+            serializer = self.serializer_class(data=request.data)
 
         serializer.is_valid(raise_exception=True)
         serializer.save(article=article, favoritor=user)
@@ -409,18 +412,34 @@ class FavoriteArticle(generics.GenericAPIView):
             "data": serializer.data
         })
 
-    def delete(self, request, slug=None, *args, **kwargs):
-        """Unfavorite article"""
+    def list(self, request, slug):
+        """
+        get:
+        The get all articles favorited endpoint
+        """
+        querysets = FavoriteArticleModel.objects.filter(favoritor=request.user)
+        data = []
+        for queryset in querysets:
+            serializer = FavoriteArticleSerializer(queryset)
+            article = serializer.data
+            data.append(article)
+        return Response({'data':data})
+
+    def destroy(self, request, slug=None, *args, **kwargs):
+        """
+        delete:
+        Unfavorite article endpoint
+        """
         try:
             article = ArticleModel.objects.filter(slug=slug).first()
             existing_favorite = FavoriteArticleModel.objects.get(
                 article=article, favoritor=request.user)
-            existing_favorite.delete()
+            self.perform_destroy(existing_favorite)
             return Response({'status': 200,
-                                'data': 'Article unfavorited successfully'},
+                             'data': 'Article unfavorited successfully'},
                             status=200)
         except:
             response = {
-                    'error': 'Article with slug {} not found'.format(slug)
-                }
+                'error': 'Article with slug {} not found'.format(slug)
+            }
             return Response(data=response, status=status.HTTP_404_NOT_FOUND)

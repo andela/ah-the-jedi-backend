@@ -12,5 +12,7 @@ urlpatterns = [
                                                            'get': 'list'})),
     path('articles/<slug>/like/', LikeView.as_view()),
     path('articles/<slug>/dislike/', DisLikeView.as_view()),
-    path('articles/<slug>/favorite/', FavoriteArticle.as_view())
+    path('articles/<slug>/favorite/', FavoriteArticle.as_view({'post': 'create',
+                                                               'get': 'list',
+                                                               'delete': 'destroy'})),
 ]
