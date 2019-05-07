@@ -120,6 +120,20 @@ class BaseTest(TestCase):
             format="json"
         )
 
+    def get_all_profiles(self, token):
+        """
+        This method accesses the get all
+        profiles endpoint which takes a
+        token since the route is authenticated
+        """
+
+        return self.client.get(
+            "/api/profiles/",
+            HTTP_AUTHORIZATION='Bearer ' +
+            token,
+            format="json"
+        )
+
     def generate_image(self):
         """
         This method 'generate_image'

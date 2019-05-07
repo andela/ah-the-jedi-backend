@@ -143,3 +143,20 @@ class ProfileTest(BaseTest):
         self.assertTrue(
             "Ensure that the file is an image" in
             updated_profile.data["errors"])
+
+    def test_authenticated_user_gets_all_profiles(self):
+        """
+        Test that shows an authenticated user can get all listed user profiles.
+        """
+        profiles = self.get_all_profiles(token=self.user_token)
+
+        self.assertEqual(profiles.status_code, 200)
+        self.assertTrue(profiles.data)
+
+    def test_unauthenticated_user_cannot_get_all_profiles(self):
+        """
+        Test that shows an unauthenticated user cannot get all listed user profiles.
+        """
+        profiles = self.get_all_profiles(token='')
+
+        self.assertEqual(profiles.status_code, 401)
