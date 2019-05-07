@@ -10,6 +10,9 @@ from ...apps.articles.models import ArticleModel
 from ...apps.articles.views import ArticleView
 import json
 import os
+import random
+import string
+
 from PIL import Image
 
 
@@ -182,6 +185,36 @@ class ModelTestCase(BaseTest):
 
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
+
+    def test_can_get_all_articles_pagination(self, token=''):
+        """
+        Test can get all articles has a paginated response
+        """
+
+        if not token:
+            token = self.login_user_and_get_token(self.base_data.user_data)
+
+        letters = string.ascii_letters
+        i = 0
+        for i in range(20):
+            self.client.post('/api/articles/',
+                             self.base_data.article_data,
+                             HTTP_AUTHORIZATION='Bearer ' +
+                             token,
+                             format='json')
+            self.base_data.article_data.update({'title': ''.join(random.choice(letters))})
+            self.base_data.article_data.update({'body': ''.join(random.choice(letters))})
+            i = i+1
+
+        response = self.client.get('/api/articles/')
+
+        self.assertEqual(response.status_code,
+                         status.HTTP_200_OK)
+
+        response = json.loads(response.content.decode('utf-8'))
+
+        self.assertEqual(len(response['results']), 9)
+        self.assertTrue(response['count'], 19)
 
     def test_can_get_one_article(self, token=''):
         """

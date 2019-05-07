@@ -166,6 +166,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'authors.apps.profiles.permissions.IsGetOrIsAuthenticated',
     ),
+    'DEFAULT_PAGINATION_CLASS':
+    'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE':
+    env.int('DJANGO_DEFAULT_PAGE_SIZE', default=25),
 }
 
 # jwt authentication settings

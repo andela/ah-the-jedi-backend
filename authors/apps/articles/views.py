@@ -81,11 +81,21 @@ class ArticleView(viewsets.ModelViewSet):
     def list(self, request):
         """
         get:
-        The get article endpoint
+        The get articles endpoint
         """
+        page_limit = request.GET.get('limit')
+
+        if not page_limit or not page_limit.isdigit():
+            page_limit = 9
+
         queryset = self.queryset
-        serializer = ArticleSerializer(queryset, many=True,
+        paginator = PageNumberPagination()
+        paginator.page_size = page_limit
+
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = ArticleSerializer(page, many=True,
                                        context={'request': request})
+
         dictionary = None
         data = []
         for article in serializer.data:
@@ -93,9 +103,7 @@ class ArticleView(viewsets.ModelViewSet):
             dictionary['author'] = user_object(dictionary['author'])
             data.append(dictionary)
 
-        return JsonResponse({"status": 200,
-                             "data": data},
-                            status=200)
+        return paginator.get_paginated_response(data=data)
 
     def retrieve(self, request, slug=None):
         """
