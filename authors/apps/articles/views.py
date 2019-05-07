@@ -28,6 +28,7 @@ from rest_framework.generics import (
 from rest_framework.exceptions import ValidationError
 from .utils import (ImageUploader, user_object,
                     configure_response, add_social_share)
+import readtime
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -53,7 +54,7 @@ class ArticleView(viewsets.ModelViewSet):
         """
         try:
             return [permission() for permission in self.permission_classes_by_action[self.action]]
-        except KeyError:
+        except KeyError:  # pragma: no cover
             return [permission() for permission in self.permission_classes]  # pragma: no cover
 
     def create(self, request):
@@ -154,10 +155,14 @@ class ArticleView(viewsets.ModelViewSet):
                  "error": "You cannot edit an article you do not own"},
                 status=403)
 
+        body = request.data.get('body')
+        read_time = readtime.of_text(body)
+        request.data['readtime'] = read_time.text
         request.data['slug'] = request.data['title']
         serializer = ArticleSerializer(article,
                                        data=request.data,
-                                       context={'request': request})
+                                       context={'request': request},
+                                       partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         response = Response(serializer.data)
@@ -193,6 +198,11 @@ class ArticleView(viewsets.ModelViewSet):
         Function for creating an article
         """
         request.data['author'] = request.user.id
+
+        body = request.data['body']
+        read_time = readtime.of_text(body)
+        request.data['readtime'] = read_time.text
+
         response = super().create(request)
         response.data['author'] = user_object(response.data['author'])
         response.data = add_social_share(response.data)
