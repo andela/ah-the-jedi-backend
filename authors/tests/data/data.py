@@ -110,3 +110,13 @@ class Data:
         self.rating_data = {
             "rating": "5"
         }
+        self.highlight_data = {
+            "highlight": "the first",
+            "comment": "this is a sample comment for highlight",
+            "location": "body"
+        }
+        self.in_existent_highlight_data = {
+            "highlight": "this is so inexistent data, unique",
+            "comment": "this is a sample comment for highlight",
+            "location": "body"
+        }

@@ -37,4 +37,6 @@ urlpatterns = [
                           'follows'), namespace='follows')),
     path('api/', include('authors.apps.ratings.urls')),
     path('', swagger_view, name="root_url"),
+    path('api/', include(('authors.apps.highlights.urls',
+                          'highlights'), namespace='highlights')),
 ]

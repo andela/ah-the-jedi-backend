@@ -1,11 +1,16 @@
+from ..highlights.serializers import HighlightsSerializer
+from ..highlights.models import HighlightsModel
+from authors.apps.ratings.models import Ratings
+from django.db.models import Avg
 from rest_framework import serializers
 from django.apps import apps
 from .models import ArticleModel, FavoriteArticleModel, BookmarkArticleModel
 from fluent_comments.models import FluentComment
 from .utils import user_object, configure_response
 from django.contrib.auth.models import AnonymousUser
-from django.db.models import Avg
-from authors.apps.ratings.models import Ratings
+<< << << < HEAD
+== == == =
+>>>>>> > feat(highlights): implement user should be able to highlight articles
 
 TABLE = apps.get_model('articles', 'ArticleModel')
 
@@ -34,6 +39,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class ArticleSerializer(serializers.ModelSerializer):
     """The article serializer."""
+
     comments = serializers.SerializerMethodField()
     favorited = serializers.SerializerMethodField()
     favoritesCount = serializers.SerializerMethodField()
@@ -41,6 +47,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField(
         method_name='rating',
         read_only=True)
+    highlights = serializers.SerializerMethodField()
 
     class Meta:
         model = TABLE
@@ -67,6 +74,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'facebook',
             'mail',
             'readtime',
+            'highlights',
         )
         lookup_field = 'slug'
         extra_kwargs = {'url': {'lookup_field': 'slug'}}
@@ -84,7 +92,9 @@ class ArticleSerializer(serializers.ModelSerializer):
 
         return data
 
-    def get_favorited(self, obj):
+
+<< << << < HEAD
+   def get_favorited(self, obj):
 
         if self.check_anonymous():
             return False
@@ -97,14 +107,17 @@ class ArticleSerializer(serializers.ModelSerializer):
             return True
         return False
 
-    def check_anonymous(self):
+== == == =
+>>>>>> > feat(highlights): implement user should be able to highlight articles
+   def check_anonymous(self):
         request = self.context.get('request')
         if request.user.is_anonymous:
             return True
         if request:
             return False
 
-    def get_favoritesCount(self, obj):
+<< << << < HEAD
+   def get_favoritesCount(self, obj):
 
         favorited_articles = FavoriteArticleModel.objects.all().filter(
             article=obj).count()
@@ -160,3 +173,19 @@ class BookmarkArticleSerializer(serializers.ModelSerializer):
         model = BookmarkArticleModel
         fields = ['author', 'title', 'slug',
                   'description', 'bookmarked_at', 'image']
+== =====
+   def get_highlights(self, obj):
+
+        if self.check_anonymous():
+            return None
+
+        highlighted = HighlightsModel.objects.filter(
+            article=obj,
+            highlighted_by=self.context['request'].user)
+
+        if highlighted:
+            serializer = HighlightsSerializer(highlighted, many=True)
+            return serializer.data
+
+        return None
+>>>>>> > feat(highlights): implement user should be able to highlight articles

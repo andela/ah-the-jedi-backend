@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django_comments',
     'authors.apps.ratings',
     'django_filters',
+    'authors.apps.highlights',
 ]
 
 COMMENTS_APP = 'fluent_comments'
