@@ -28,6 +28,9 @@ class ArticleModel(VoteModel, models.Model):
     num_vote_down = models.IntegerField(default=0)
     num_vote_up = models.IntegerField(default=0)
     vote_score = models.IntegerField(default=0)
+    twitter = models.URLField(blank=True, null=True)
+    facebook = models.URLField(blank=True, null=True)
+    mail = models.TextField(blank=False, null=False, default="")
 
     author = models.ForeignKey(
         get_user_model(),
