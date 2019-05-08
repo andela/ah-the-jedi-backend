@@ -90,6 +90,7 @@ class ProfileRetreiveUpdateAPIView(RetrieveUpdateAPIView):
 
 
 class ListProfilesView(APIView):
+    """List users profiles"""
 
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProfileSerializer

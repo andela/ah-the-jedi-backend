@@ -96,6 +96,16 @@ class LoginAPIView(GenericAPIView):
 
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    """
+    get:
+    Get logged in user user.
+
+    patch:
+    Edit user.
+
+    put:
+    Edit user.
+    """
     permission_classes = (IsAuthenticated,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
@@ -215,7 +225,7 @@ class ResetPasswordView(GenericAPIView):
 
 
 class ResetPasswordAPIView(GenericAPIView):
-    """Patch: Reset Password """
+    """Reset password"""
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UidAndTokenSerializer
     permission_classes = [permissions.AllowAny]
@@ -282,18 +292,19 @@ class SocialLoginView(generics.GenericAPIView):
                 token = {
                     'oauth_token': serializer.initial_data.get('access_token'),
                     'oauth_token_secret': serializer.initial_data.get('access_token_secret')
-                } # pragma: no cover
-                user = backend.do_auth(token)# pragma: no cover
-                url = 'https://api.twitter.com/1.1/account/verify_credentials.json' # pragma: no cover
+                }  # pragma: no cover
+                user = backend.do_auth(token)  # pragma: no cover
+                url = 'https://api.twitter.com/1.1/account/verify_credentials.json'  # pragma: no cover
                 twitter = OAuth1Session(client_key=os.environ.get('SOCIAL_AUTH_TWITTER_KEY'),
                                         client_secret=os.environ.get(
                                             'SOCIAL_AUTH_TWITTER_SECRET'),
                                         resource_owner_key=serializer.initial_data.get(
                                             'access_token'),
                                         resource_owner_secret=serializer.initial_data.get('access_token_secret'
-                                                                                          ))# pragma: no cover
-                response = twitter.get(f'{url}?include_email=true') # pragma: no cover
-                id_info = json.loads(response.text) # pragma: no cover
+                                                                                          ))  # pragma: no cover
+                response = twitter.get(
+                    f'{url}?include_email=true')  # pragma: no cover
+                id_info = json.loads(response.text)  # pragma: no cover
                 if user and user.is_active:
                     token = handle_token(user)
                     response = {

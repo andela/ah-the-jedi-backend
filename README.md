@@ -4,7 +4,7 @@
 Authors Haven - A Social platform for the creative at heart.
 =======
 
-Authors Haven Documentation is availabe [Here](https://ah-the-jedi-backend-staging.herokuapp.com/api/)
+Authors Haven Documentation is availabe [Here](https://ah-the-jedi-backend-staging.herokuapp.com/)
 
 
 ## Vision
