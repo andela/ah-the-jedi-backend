@@ -1,17 +1,18 @@
 from django.shortcuts import render
 from rest_framework import (generics, permissions,
-                            status, views, viewsets, serializers)
+                            filters, status, views, viewsets, serializers)
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import permission_classes
-from .serializers import ArticleSerializer, TABLE, CommentSerializer, FavoriteArticleSerializer
+from .serializers import (ArticleSerializer, TABLE,
+                          CommentSerializer, FavoriteArticleSerializer)
 from django.contrib.auth.models import User
 from ..authentication.models import User
 from .models import ArticleModel, FavoriteArticleModel
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
 )
-
 from django.utils import timezone
 from django.http import JsonResponse
 from django.core.files.storage import FileSystemStorage
@@ -27,8 +28,10 @@ from rest_framework.generics import (
 )
 from rest_framework.exceptions import ValidationError
 from .utils import (ImageUploader, user_object,
-                    configure_response, add_social_share)
+                    configure_response, add_social_share, ArticleFilter)
 import readtime
+from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -462,3 +465,33 @@ class FavoriteArticle(viewsets.ModelViewSet):
                 'error': 'Article with slug {} not found'.format(slug)
             }
             return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+
+class ArticleList(ListAPIView):
+    """
+    Search and filter View
+    """
+    permission_classes = [AllowAny]
+    queryset = ArticleModel.objects.all()
+    serializer_class = ArticleSerializer
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
+    filter_class = ArticleFilter
+    search_fields = ('author__username', 'description', 'body', 'title', )
+
+    def list(self, request):
+        # with filter
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # pagination
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        dictionary = None
+        data = []
+        if serializer.data:
+            for article in serializer.data:
+                dictionary = dict(article)
+                dictionary = add_social_share(dictionary)
+                dictionary['author'] = user_object(dictionary['author'])
+                data.append(dictionary)
+            return self.get_paginated_response(data=data)
+        return Response({'status': 404, 'message': 'We could not find what you are looking for.'}, status=404)
