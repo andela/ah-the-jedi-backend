@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'fluent_comments',
     'threadedcomments',
     'django_comments',
+    'authors.apps.ratings',
 ]
 
 COMMENTS_APP = 'fluent_comments'
