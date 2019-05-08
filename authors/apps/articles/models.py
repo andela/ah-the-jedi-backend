@@ -6,9 +6,10 @@ from authors.apps.authentication.models import User
 from autoslug import AutoSlugField
 from django.core.validators import URLValidator
 from django.template.defaultfilters import slugify
+from vote.models import VoteModel
 
 
-class ArticleModel(models.Model):
+class ArticleModel(VoteModel, models.Model):
     """The article model."""
 
     slug = AutoSlugField(populate_from='title',
@@ -24,6 +25,9 @@ class ArticleModel(models.Model):
     favoritesCount = models.IntegerField(default=0)
     image = models.TextField(max_length=1000, validators=[
                              URLValidator], null=False, default='')
+    num_vote_down = models.IntegerField(default=0)
+    num_vote_up = models.IntegerField(default=0)
+    vote_score = models.IntegerField(default=0)
 
     author = models.ForeignKey(
         get_user_model(),

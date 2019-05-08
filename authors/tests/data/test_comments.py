@@ -35,17 +35,6 @@ class CommentTestCase(BaseTest):
         login = self.login_user()
         self.token = login.data['token']
 
-    def create_article(self):
-        """
-        Method to create an article
-        """
-        article = self.client.post('/api/articles/',
-                                   self.base_data.article_data,
-                                   HTTP_AUTHORIZATION='Bearer ' +
-                                   self.token,
-                                   format='json')
-        return article
-
     def test_a_user_can_create_a_comment(self):
         """
         Test an authenticated user can successfully create a comment
@@ -72,7 +61,8 @@ class CommentTestCase(BaseTest):
                                    self.base_data.comment_data,
                                    format='json')
 
-        self.assertEqual(comment.data['detail'], "Authentication credentials were not provided.")
+        self.assertEqual(
+            comment.data['detail'], "Authentication credentials were not provided.")
         self.assertEqual(comment.status_code, 401)
 
     def test_create_comment_with_unexisting_slug(self):

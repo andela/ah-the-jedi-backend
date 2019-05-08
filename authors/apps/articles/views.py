@@ -22,6 +22,9 @@ from django.apps import apps
 from fluent_comments.models import FluentComment
 from django.contrib.contenttypes.models import ContentType
 from .utils import user_object, configure_response
+from rest_framework.generics import (
+    RetrieveUpdateAPIView, GenericAPIView
+)
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -48,7 +51,7 @@ class ArticleView(viewsets.ModelViewSet):
         try:
             return [permission() for permission in self.permission_classes_by_action[self.action]]
         except KeyError:
-            return [permission() for permission in self.permission_classes]
+            return [permission() for permission in self.permission_classes]  # pragma: no cover
 
     def create(self, request):
         """
@@ -244,7 +247,8 @@ class CommentView(viewsets.ModelViewSet):
 
             parent = request.GET.get('parent_id')
             if parent:
-                parent_exists = FluentComment.objects.filter(pk=parent, object_pk=slug)
+                parent_exists = FluentComment.objects.filter(
+                    pk=parent, object_pk=slug)
                 if not parent_exists:
                     return JsonResponse(
                         {'status': 404,
@@ -261,7 +265,8 @@ class CommentView(viewsets.ModelViewSet):
                                                    site_id=settings.SITE_ID,
                                                    parent_id=parent)
 
-            serializer = CommentSerializer(comment, context={'request': request})
+            serializer = CommentSerializer(
+                comment, context={'request': request})
 
             response = Response(serializer.data)
             response.data['author'] = user_object(request.user.id)
@@ -302,3 +307,63 @@ class CommentView(viewsets.ModelViewSet):
         return Response(
             {"Comments": data,
              "commentsCount": queryset.count()})
+
+
+class LikeView(GenericAPIView):
+    """The like view for articles"""
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs.get('slug')
+
+        slug_exists = ArticleModel.objects.filter(slug=slug)
+        if not slug_exists:
+            return JsonResponse(
+                {'status': 404,
+                 'error': 'Article with slug {} not found'.format(slug)},
+                status=404)
+
+        article = ArticleModel.objects.filter(slug=slug)[0]
+
+        user_id = request.user.id
+        check_vote = article.votes.exists(user_id)
+
+        if check_vote:
+            article.votes.delete(user_id)
+            return JsonResponse({
+                "status": 200,
+                "message": "You have deleted this like", },
+                status=200)
+        article.votes.up(user_id)
+
+        return JsonResponse({"status": 200,
+                             "message": "You have liked this article",
+                             },
+                            status=200)
+
+
+class DisLikeView(GenericAPIView):
+    """The like view for articles"""
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs.get('slug')
+
+        slug_exists = ArticleModel.objects.filter(slug=slug)
+        if not slug_exists:
+            return JsonResponse(
+                {'status': 404,
+                 'error': 'Article with slug {} not found'.format(slug)},
+                status=404)
+
+        article = ArticleModel.objects.filter(slug=slug)[0]
+        user_id = request.user.id
+
+        vote_down = article.votes.down(user_id)
+
+        if vote_down:
+            return JsonResponse({"status": 200,
+                                 "message": "You have Disliked this article", },
+                                status=200)
+        article.votes.delete(user_id)
+        return JsonResponse({"status": 200,
+                             "message": "You have deleted this dislike", },
+                            status=200)

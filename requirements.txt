@@ -24,6 +24,7 @@ django-rest-framework-social-oauth2==1.1.0
 django-rest-swagger==2.1.2
 django-tag-parser==3.1
 django-threadedcomments==1.2
+django-vote==2.1.7
 djangorestframework==3.9.2
 djangorestframework-jwt==1.11.0
 entrypoints==0.3

@@ -50,6 +50,9 @@ class ArticleSerializer(serializers.ModelSerializer):
             'author',
             'image',
             'comments',
+            'num_vote_down',
+            'num_vote_up',
+            'vote_score',
         )
         lookup_field = 'slug'
         extra_kwargs = {'url': {'lookup_field': 'slug'}}
@@ -59,7 +62,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         return article
 
     def get_comments(self, obj):
-        comment = FluentComment.objects.filter(object_pk=obj.slug, parent_id=None)
+        comment = FluentComment.objects.filter(
+            object_pk=obj.slug, parent_id=None)
         serializer = CommentSerializer(comment, many=True)
 
         data = configure_response(serializer)
