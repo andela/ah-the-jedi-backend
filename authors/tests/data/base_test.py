@@ -32,6 +32,20 @@ class BaseTest(TestCase):
             format="json"
         )
 
+    def signup_user2(self, data=''):
+        """
+        This method 'signup_user' creates an account
+        using the provided details
+        """
+
+        data = data or self.base_data.user_data2
+
+        return self.client.post(
+            "/api/users/",
+            data,
+            format="json"
+        )
+
     def activate_user(self, uid, token):
         """
         This method 'activate_user' activates a user account
@@ -51,6 +65,23 @@ class BaseTest(TestCase):
         """
 
         data = data or self.base_data.login_data
+
+        response = self.client.post(
+            "/api/users/login/",
+            data,
+            format="json"
+        )
+
+        return response
+
+    def login_user2(self, data=''):
+        """
+        This method 'login_user'
+        attempts to log in a user
+        with the data provided
+        """
+
+        data = data or self.base_data.login_data2
 
         response = self.client.post(
             "/api/users/login/",

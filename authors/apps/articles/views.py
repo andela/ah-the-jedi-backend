@@ -3,13 +3,14 @@ from rest_framework import generics, permissions, status, views, viewsets, seria
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import permission_classes
-from .serializers import ArticleSerializer, TABLE, CommentSerializer
+from .serializers import ArticleSerializer, TABLE, CommentSerializer, FavoriteArticleSerializer
 from django.contrib.auth.models import User
 from ..authentication.models import User
-from .models import ArticleModel
+from .models import ArticleModel, FavoriteArticleModel
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
 )
+
 from django.utils import timezone
 from django.http import JsonResponse
 from django.core.files.storage import FileSystemStorage
@@ -25,6 +26,7 @@ from .utils import user_object, configure_response
 from rest_framework.generics import (
     RetrieveUpdateAPIView, GenericAPIView
 )
+from rest_framework.exceptions import ValidationError
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -367,3 +369,77 @@ class DisLikeView(GenericAPIView):
         return JsonResponse({"status": 200,
                              "message": "You have deleted this dislike", },
                             status=200)
+
+
+class FavoriteArticle(viewsets.ModelViewSet):
+    """Favorite an article"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = FavoriteArticleSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        post:
+        Create favorite endpoint
+        """
+        slug = self.kwargs.get('slug')
+        article = ArticleModel.objects.all().filter(slug=slug).first()
+        user = request.user
+
+        if article is None:
+            response = {
+                'error': 'Article with slug {} not found'.format(slug)
+            }
+            return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+        if user == article.author:
+            response = {
+                "error": "You are not allowed to favourite your own article"
+            }
+            return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            existing_favorite = FavoriteArticleModel.objects.get(
+                article=article, favoritor=request.user)
+            serializer = self.serializer_class(
+                existing_favorite, data=request.data)
+        except FavoriteArticleModel.DoesNotExist:
+            serializer = self.serializer_class(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save(article=article, favoritor=user)
+
+        return Response({
+            "data": serializer.data
+        })
+
+    def list(self, request, slug):
+        """
+        get:
+        The get all articles favorited endpoint
+        """
+        querysets = FavoriteArticleModel.objects.filter(favoritor=request.user)
+        data = []
+        for queryset in querysets:
+            serializer = FavoriteArticleSerializer(queryset)
+            article = serializer.data
+            data.append(article)
+        return Response({'data':data})
+
+    def destroy(self, request, slug=None, *args, **kwargs):
+        """
+        delete:
+        Unfavorite article endpoint
+        """
+        try:
+            article = ArticleModel.objects.filter(slug=slug).first()
+            existing_favorite = FavoriteArticleModel.objects.get(
+                article=article, favoritor=request.user)
+            self.perform_destroy(existing_favorite)
+            return Response({'status': 200,
+                             'data': 'Article unfavorited successfully'},
+                            status=200)
+        except:
+            response = {
+                'error': 'Article with slug {} not found'.format(slug)
+            }
+            return Response(data=response, status=status.HTTP_404_NOT_FOUND)

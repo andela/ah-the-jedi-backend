@@ -43,3 +43,14 @@ class ArticleModel(VoteModel, models.Model):
 
     class Meta:
         ordering = ["-createdAt"]
+
+
+class FavoriteArticleModel(models.Model):
+    """Favorite article model."""
+    favoritor = models.ForeignKey(
+        User, related_name='favorites', on_delete=models.CASCADE)
+
+    article = models.ForeignKey(
+        ArticleModel,
+        related_name='favorited_article',
+        on_delete=models.CASCADE)

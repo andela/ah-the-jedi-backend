@@ -36,6 +36,13 @@ class Data:
             }
         }
 
+        self.login_data2 = {
+            "user": {
+                "email": 'anotheruser@gmail.com',
+                "password": 'admin1211'
+            }
+        }
+
         self.update_data = {
             "user": {
                 "username": "newMan"
@@ -54,6 +61,12 @@ class Data:
         }
 
         self.article_data = {
+            'title': 'First test data',
+            'description': 'This is the first test data',
+            'body': 'This is the first body'
+        }
+
+        self.article_data1 = {
             'title': 'First test data',
             'description': 'This is the first test data',
             'body': 'This is the first body'

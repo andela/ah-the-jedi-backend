@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import ArticleView, CommentView, LikeView, DisLikeView
+from .views import ArticleView, CommentView, LikeView, DisLikeView, FavoriteArticle
 
 
 router = routers.DefaultRouter()
@@ -12,4 +12,7 @@ urlpatterns = [
                                                            'get': 'list'})),
     path('articles/<slug>/like/', LikeView.as_view()),
     path('articles/<slug>/dislike/', DisLikeView.as_view()),
+    path('articles/<slug>/favorite/', FavoriteArticle.as_view({'post': 'create',
+                                                               'get': 'list',
+                                                               'delete': 'destroy'})),
 ]

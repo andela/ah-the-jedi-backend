@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from django.apps import apps
-from .models import ArticleModel
+from .models import ArticleModel, FavoriteArticleModel
 from fluent_comments.models import FluentComment
 from .utils import user_object, configure_response
+from django.contrib.auth.models import AnonymousUser
 
 TABLE = apps.get_model('articles', 'ArticleModel')
 
@@ -32,6 +33,8 @@ class CommentSerializer(serializers.ModelSerializer):
 class ArticleSerializer(serializers.ModelSerializer):
     """The article serializer."""
     comments = serializers.SerializerMethodField()
+    favorited = serializers.SerializerMethodField()
+    favoritesCount = serializers.SerializerMethodField()
 
     class Meta:
         model = TABLE
@@ -69,3 +72,55 @@ class ArticleSerializer(serializers.ModelSerializer):
         data = configure_response(serializer)
 
         return data
+
+    def get_favorited(self, obj):
+
+        if self.check_anonymous():
+            return False
+
+        favorited = FavoriteArticleModel.objects.filter(
+            article=obj,
+            favoritor=self.context['request'].user)
+
+        if favorited:
+            return True
+        return False
+
+    def check_anonymous(self):
+        request = self.context.get('request')
+        if request.user.is_anonymous:
+            return True
+        if request:
+            return False
+
+    def get_favoritesCount(self, obj):
+
+        favorited_articles = FavoriteArticleModel.objects.all().filter(
+            article=obj).count()
+        return favorited_articles
+
+
+class FavoriteArticleSerializer(serializers.ModelSerializer):
+    """Favorite article serializer"""
+
+    article = serializers.SerializerMethodField(method_name='is_article')
+    favorited = serializers.SerializerMethodField(method_name='is_favorited')
+
+    class Meta:
+        model = FavoriteArticleModel
+        fields = (
+            'article',
+            'favorited'
+        )
+
+    def is_favorited(self, obj):
+        queryset = FavoriteArticleModel.objects.filter(
+            favoritor=obj.favoritor, article=obj.article)
+
+        if queryset:
+            return True
+        return False
+
+    def is_article(self, obj):
+        return obj.article.slug
+
