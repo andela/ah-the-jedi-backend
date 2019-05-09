@@ -64,7 +64,6 @@ def user_object(uid):
         user.image = instance.image
     except:
         pass
-
     return user
 
 
