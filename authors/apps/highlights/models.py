@@ -18,3 +18,4 @@ class HighlightsModel(models.Model):
     highlight = models.TextField(blank=False, null=False)
     comment = models.TextField(blank=False, null=False)
     location = models.TextField(blank=False, null=False)
+    position = models.IntegerField(blank=False, null=False)
