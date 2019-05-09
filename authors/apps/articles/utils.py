@@ -83,7 +83,7 @@ def configure_response(serializer):
 
 def add_social_share(request):
     """
-    Function for adding share url to an article
+    Function for adding share url to an article 
     """
     request['twitter'] = 'https://twitter.com/share?url=' + \
         request['url']+'&amp;text=Checkout this article on ' + \
