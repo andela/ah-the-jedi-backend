@@ -39,4 +39,6 @@ urlpatterns = [
     path('api/', include('authors.apps.ratings.urls')),
     path('', swagger_view, name="root_url"),
     path('api/', notification_urls),
+    path('api/', include(('authors.apps.highlights.urls',
+                          'highlights'), namespace='highlights')),
 ]

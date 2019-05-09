@@ -6,6 +6,9 @@ from .utils import user_object, configure_response
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Avg
 from authors.apps.ratings.models import Ratings
+from ..highlights.models import HighlightsModel
+from ..highlights.serializers import HighlightsSerializer
+
 
 TABLE = apps.get_model('articles', 'ArticleModel')
 
@@ -37,6 +40,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
     favorited = serializers.SerializerMethodField()
     favoritesCount = serializers.SerializerMethodField()
+    highlights = serializers.SerializerMethodField()
 
     average_rating = serializers.SerializerMethodField(
         method_name='rating',
@@ -67,6 +71,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'facebook',
             'mail',
             'readtime',
+            'highlights',
         )
         lookup_field = 'slug'
         extra_kwargs = {'url': {'lookup_field': 'slug'}}
@@ -120,6 +125,21 @@ class ArticleSerializer(serializers.ModelSerializer):
         if average_rate["rate"]:
             return float('%.2f' % (average_rate["rate"]))
         return 0
+
+    def get_highlights(self, obj):
+
+        if self.check_anonymous():
+            return None
+
+        highlighted = HighlightsModel.objects.filter(
+            article=obj,
+            highlighted_by=self.context['request'].user)
+
+        if highlighted:
+            serializer = HighlightsSerializer(highlighted, many=True)
+            return serializer.data
+
+        return None
 
 
 class FavoriteArticleSerializer(serializers.ModelSerializer):
