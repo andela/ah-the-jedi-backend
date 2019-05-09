@@ -2,6 +2,8 @@ import cloudinary.uploader
 import datetime
 from rest_framework.response import Response
 from .models import User
+from .models import ArticleModel
+from django_filters import FilterSet, rest_framework
 
 
 def ImageUploader(image):
@@ -62,7 +64,6 @@ def user_object(uid):
         user.image = instance.image
     except:
         pass
-
     return user
 
 
@@ -81,7 +82,7 @@ def configure_response(serializer):
 
 def add_social_share(request):
     """
-    Function for adding share url to an article
+    Function for adding share url to an article 
     """
     request['twitter'] = 'https://twitter.com/share?url=' + \
         request['url']+'&amp;text=Checkout this article on ' + \
@@ -93,3 +94,19 @@ def add_social_share(request):
         request['title'], request['url'])
 
     return request
+
+
+class ArticleFilter(FilterSet):
+    """
+    Custom filter class for articles
+    """
+    title = rest_framework.CharFilter('title',
+                                      lookup_expr='icontains')
+    author = rest_framework.CharFilter('author__username',
+                                       lookup_expr='icontains')
+    tag = rest_framework.CharFilter('tagList',
+                                    lookup_expr='icontains')
+
+    class Meta:
+        model = ArticleModel
+        fields = ("title", "author", "tag")

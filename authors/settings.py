@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'threadedcomments',
     'django_comments',
     'authors.apps.ratings',
+    'django_filters',
 ]
 
 COMMENTS_APP = 'fluent_comments'
@@ -163,8 +164,8 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-
     ),
+
     'DEFAULT_PERMISSION_CLASSES': (
         'authors.apps.profiles.permissions.IsGetOrIsAuthenticated',
     ),
@@ -172,6 +173,10 @@ REST_FRAMEWORK = {
     'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE':
     env.int('DJANGO_DEFAULT_PAGE_SIZE', default=25),
+
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
 }
 
 # jwt authentication settings

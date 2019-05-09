@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import ArticleView, CommentView, LikeView, DisLikeView, FavoriteArticle
+from .views import (ArticleView, CommentView, LikeView,
+                    DisLikeView, FavoriteArticle, ArticleList)
 
 
 router = routers.DefaultRouter()
@@ -15,4 +16,5 @@ urlpatterns = [
     path('articles/<slug>/favorite/', FavoriteArticle.as_view({'post': 'create',
                                                                'get': 'list',
                                                                'delete': 'destroy'})),
+    path('article/search/', ArticleList.as_view(), name='article-search'),
 ]
