@@ -6,10 +6,11 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import permission_classes
 from .serializers import (ArticleSerializer, TABLE,
-                          CommentSerializer, FavoriteArticleSerializer)
+                          CommentSerializer, FavoriteArticleSerializer,
+                          BookmarkArticleSerializer)
 from django.contrib.auth.models import User
 from ..authentication.models import User
-from .models import ArticleModel, FavoriteArticleModel
+from .models import ArticleModel, FavoriteArticleModel, BookmarkArticleModel
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
 )
@@ -495,3 +496,87 @@ class ArticleList(ListAPIView):
                 data.append(dictionary)
             return self.get_paginated_response(data=data)
         return Response({'status': 404, 'message': 'We could not find what you are looking for.'}, status=404)
+
+
+class BookmarkArticleView(viewsets.ModelViewSet):
+    """Bookmark an article"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = BookmarkArticleSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        post:
+        Create bookmark endpoint
+        """
+        slug = self.kwargs.get('slug')
+        article = ArticleModel.objects.all().filter(slug=slug).first()
+        user = request.user
+
+        if article is None:
+            response = {
+                'error': 'Article with slug {} not found'.format(slug)
+            }
+            return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+        if user == article.author:
+            response = {
+                "error": "You cannot bookmark your own article"
+            }
+            return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            bookmarked_article = BookmarkArticleModel.objects.get(
+                article=article, user=request.user)
+
+            if bookmarked_article:
+                response = {
+                    "error": "You already bookmarked this article"
+                }
+                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+        except BookmarkArticleModel.DoesNotExist:
+            serializer = self.serializer_class(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save(article=article, user=user)
+        response = {
+            "data": serializer.data
+        }
+        return Response(data=response, status=status.HTTP_200_OK)
+
+    def list(self, request, slug):
+        """
+        get:
+        The get all articles bookmarked endpoint
+        """
+        querysets = BookmarkArticleModel.objects.filter(user=request.user)
+        data = []
+        serializer = BookmarkArticleSerializer(querysets)
+        for queryset in querysets:
+            serializer = BookmarkArticleSerializer(queryset)
+            article = serializer.data
+            data.append(article)
+        response = {
+            "data": data
+        }
+        return Response(data=response, status=status.HTTP_200_OK)
+
+    def destroy(self, request, slug=None):
+        """
+        delete:
+        The unbookmark article endpoint
+        """
+        try:
+            article = ArticleModel.objects.filter(slug=slug).first()
+            bookmarked_article = BookmarkArticleModel.objects.get(
+                article=article, user=request.user)
+            self.perform_destroy(bookmarked_article)
+            response = {
+                "data": "Article unbookmarked successfully"
+            }
+            return Response(data=response, status=status.HTTP_200_OK)
+        except:
+            response = {
+                'error': 'Article with slug {} not found'.format(slug)
+            }
+            return Response(data=response, status=status.HTTP_404_NOT_FOUND)

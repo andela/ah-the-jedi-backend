@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework import routers
 from .views import (ArticleView, CommentView, LikeView,
-                    DisLikeView, FavoriteArticle, ArticleList)
+                    DisLikeView, FavoriteArticle, ArticleList,
+                    BookmarkArticleView)
 
 
 router = routers.DefaultRouter()
@@ -17,4 +18,7 @@ urlpatterns = [
                                                                'get': 'list',
                                                                'delete': 'destroy'})),
     path('article/search/', ArticleList.as_view(), name='article-search'),
+    path('articles/<slug>/bookmark/', BookmarkArticleView.as_view({'post': 'create',
+                                                                   'get': 'list',
+                                                                   'delete': 'destroy'})),
 ]

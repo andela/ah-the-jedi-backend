@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.apps import apps
-from .models import ArticleModel, FavoriteArticleModel
+from .models import ArticleModel, FavoriteArticleModel, BookmarkArticleModel
 from fluent_comments.models import FluentComment
 from .utils import user_object, configure_response
 from django.contrib.auth.models import AnonymousUser
@@ -145,3 +145,18 @@ class FavoriteArticleSerializer(serializers.ModelSerializer):
 
     def is_article(self, obj):
         return obj.article.slug
+
+
+class BookmarkArticleSerializer(serializers.ModelSerializer):
+    """Bookmark article serializer."""
+
+    author = serializers.ReadOnlyField(source='article.author.username')
+    slug = serializers.ReadOnlyField(source='article.slug')
+    image = serializers.ReadOnlyField(source='article.image')
+    title = serializers.ReadOnlyField(source='article.title')
+    description = serializers.ReadOnlyField(source='article.description')
+
+    class Meta:
+        model = BookmarkArticleModel
+        fields = ['author', 'title', 'slug',
+                  'description', 'bookmarked_at', 'image']

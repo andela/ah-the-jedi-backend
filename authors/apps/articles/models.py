@@ -58,3 +58,12 @@ class FavoriteArticleModel(models.Model):
         ArticleModel,
         related_name='favorited_article',
         on_delete=models.CASCADE)
+
+
+class BookmarkArticleModel(models.Model):
+    """Bookmark article model."""
+    user = models.ForeignKey(User, blank=False, on_delete=models.CASCADE)
+    article = models.ForeignKey(ArticleModel, blank=False, on_delete=models.CASCADE,
+                                to_field='slug')
+    bookmarked_at = models.DateTimeField(
+        auto_created=True, auto_now=False, default=timezone.now)
