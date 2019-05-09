@@ -13,24 +13,28 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import include, url
+from django.conf.urls import include
 from django.contrib import admin
 from django.urls import path
+from rest_framework_swagger.views import get_swagger_view
 
 
 articles_urls = include('authors.apps.articles.urls')
 authentication_urls = include('authors.apps.authentication.urls')
 
+swagger_view = get_swagger_view(title='The Jedi Authors Haven API')
+
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^api/', include(('authors.apps.authentication.urls',
-                           'authentication'), namespace='authentication')),
-    url(r'^api/', include(('authors.apps.profiles.urls',
-                           'profiles'), namespace='profiles')),
+    path('admin/', admin.site.urls),
+    path('api/', include(('authors.apps.authentication.urls',
+                          'authentication'), namespace='authentication')),
+    path('api/', include(('authors.apps.profiles.urls',
+                          'profiles'), namespace='profiles')),
     path('api/', authentication_urls),
     path('api/', articles_urls),
     path('api/users/social/', include('rest_framework_social_oauth2.urls')),
-    url(r'^api/', include(('authors.apps.follows.urls',
-                           'follows'), namespace='follows')),
-    path('api/', include('authors.apps.ratings.urls'))
+    path('api/', include(('authors.apps.follows.urls',
+                          'follows'), namespace='follows')),
+    path('api/', include('authors.apps.ratings.urls')),
+    path('', swagger_view, name="root_url"),
 ]
