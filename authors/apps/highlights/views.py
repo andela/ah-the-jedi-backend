@@ -21,7 +21,11 @@ class HighlightArticleView(GenericAPIView):
         article = ArticleModel.objects.all().filter(slug=slug).first()
         user = request.user
         highlight = request.data.get("highlight", "")
-        location = request.data["location"]
+        location = request.data.get("location")
+        if not location:
+            return Response({
+                "error": "Location field is required"
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         if article is None:
             response = {
@@ -42,13 +46,14 @@ class HighlightArticleView(GenericAPIView):
             }, status=404)
 
         existing_highlight = HighlightsModel.objects.all().filter(
-            article=article.id, highlighted_by=user.id, highlight=highlight.lstrip(), location=location)
+            article=article.id, highlighted_by=user.id, highlight=highlight.lstrip(), location=location, position=expected_text.find(highlight))
         if existing_highlight:
             return Response({
                 "error": "You have already highlighted this article",
                 "status": 409
             }, status=409)
 
+        request.data['position'] = expected_text.find(highlight)
         serializer = self.serializer_class(data=request.data)
 
         serializer.is_valid(raise_exception=True)

@@ -25,17 +25,6 @@ class HighlightArticleTestcase(BaseTest):
         login = self.login_user()
         self.token = login.data['token']
 
-    def create_article(self):
-        """
-        Method to create an article
-        """
-        article = self.client.post('/api/articles/',
-                                   self.base_data.article_data,
-                                   HTTP_AUTHORIZATION='Bearer ' +
-                                   self.token,
-                                   format='json')
-        return article
-
     def test_a_user_can_highlight_article_body(self):
         """
         Test an authenticated user can successfully highlight an article

@@ -21,7 +21,8 @@ class HighlightsSerializer(serializers.ModelSerializer):
                   'highlighted_by',
                   'comment',
                   'highlight',
-                  'location',)
+                  'location',
+                  'position',)
 
     def highlighted_article(self, instance):
         """

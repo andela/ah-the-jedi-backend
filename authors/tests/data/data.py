@@ -126,3 +126,15 @@ class Data:
             "comment": "this is a sample comment for highlight",
             "location": "body"
         }
+
+        self.highlight_data_description = {
+            "highlight": "the first test data",
+            "comment": "this is a sample comment for highlight",
+            "location": "description"
+        }
+
+        self.highlight_data_title = {
+            "highlight": "test data",
+            "comment": "this is a sample comment for highlight",
+            "location": "title"
+        }
