@@ -268,3 +268,35 @@ class BaseTest(TestCase):
                                    self.token,
                                    format='json')
         return article
+
+    def bookmark_article(self, token='', slug=''):
+        """
+        Method to bookmark an article
+        """
+        return self.client.post('/api/articles/{}/bookmark/'.
+                                format(slug),
+                                self.base_data.article_data,
+                                HTTP_AUTHORIZATION='Bearer ' +
+                                token,
+                                format='json')
+
+    def get_bookmark_article(self, token='', slug=''):
+        """
+        Method to get a bookmarked article
+        """
+        return self.client.get('/api/articles/{}/bookmark/'.
+                               format(slug),
+                               self.base_data.article_data,
+                               HTTP_AUTHORIZATION='Bearer ' +
+                               token,
+                               format='json')
+
+    def delete_bookmark_article(self, token='', slug=''):
+        """
+        Method to delete a bookmark on an articles
+        """
+        return self.client.delete('/api/articles/{}/bookmark/'.
+                                  format(slug),
+                                  HTTP_AUTHORIZATION='Bearer ' +
+                                  token,
+                                  format='json')
