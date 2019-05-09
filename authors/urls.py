@@ -21,6 +21,7 @@ from rest_framework_swagger.views import get_swagger_view
 
 articles_urls = include('authors.apps.articles.urls')
 authentication_urls = include('authors.apps.authentication.urls')
+notification_urls = include('authors.apps.notifications.urls')
 
 swagger_view = get_swagger_view(title='The Jedi Authors Haven API')
 
@@ -37,4 +38,5 @@ urlpatterns = [
                           'follows'), namespace='follows')),
     path('api/', include('authors.apps.ratings.urls')),
     path('', swagger_view, name="root_url"),
+    path('api/', notification_urls),
 ]
