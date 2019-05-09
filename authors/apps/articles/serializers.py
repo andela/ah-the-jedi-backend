@@ -66,6 +66,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'twitter',
             'facebook',
             'mail',
+            'readtime',
         )
         lookup_field = 'slug'
         extra_kwargs = {'url': {'lookup_field': 'slug'}}

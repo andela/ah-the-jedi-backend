@@ -31,6 +31,7 @@ class ArticleModel(VoteModel, models.Model):
     twitter = models.URLField(blank=True, null=True)
     facebook = models.URLField(blank=True, null=True)
     mail = models.TextField(blank=False, null=False, default="")
+    readtime = models.CharField(blank=False, null=False, max_length=240)
 
     author = models.ForeignKey(
         get_user_model(),

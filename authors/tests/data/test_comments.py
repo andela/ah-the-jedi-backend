@@ -81,6 +81,22 @@ class CommentTestCase(BaseTest):
         self.assertEqual(comment['error'], 'Article with slug abc not found')
         self.assertEqual(comment['status'], 404)
 
+    def test_cannot_get_comment_with_unexisting_slug(self):
+        """
+        Test a user cannot get a comment with an unexisting article slug
+        """
+        article = self.create_article()
+
+        comment = self.client.get('/api/articles/{}/comments/'.format("abc"),
+                                  self.base_data.comment_data,
+                                  HTTP_AUTHORIZATION='Bearer ' +
+                                  self.token,
+                                  format='json')
+
+        comment = json.loads(comment.content.decode('utf-8'))
+        self.assertEqual(comment['error'], 'Article with slug abc not found')
+        self.assertEqual(comment['status'], 404)
+
     def test_create_comment_on_comment_with_unexisting_parent_id(self):
         """
         Test a user cannot comment on a comment with an unexisting parent id

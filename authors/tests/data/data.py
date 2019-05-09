@@ -80,7 +80,7 @@ class Data:
 
         self.article_missing_data = {
             'title': 'Second test data',
-            'description': 'This is the second test data',
+            'body': 'This is the second test data'
         }
 
         self.social_login_data = {

@@ -271,6 +271,7 @@ class ModelTestCase(BaseTest):
                                     format='json')
 
         artcle = json.loads(response.content.decode('utf-8'))
+
         article_url = artcle['data']['url']
 
         response = self.client.put(article_url,
@@ -401,3 +402,19 @@ class ModelTestCase(BaseTest):
                                       format='json')
         self.assertEqual(response.status_code,
                          status.HTTP_403_FORBIDDEN)
+
+    def test_article_readtime(self, token=''):
+        """
+        Test article has an estimate readtime
+        """
+
+        if not token:
+            token = self.login_user_and_get_token(self.base_data.user_data)
+
+        post_response = self.client.post('/api/articles/',
+                                         self.base_data.article_data,
+                                         HTTP_AUTHORIZATION='Bearer ' +
+                                         token,
+                                         format='json')
+
+        self.assertTrue(post_response.data['data']['readtime'])
