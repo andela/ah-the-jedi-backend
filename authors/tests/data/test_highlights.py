@@ -36,7 +36,7 @@ class HighlightArticleTestcase(BaseTest):
                                    format='json')
         return article
 
-    def test_a_user_can_highlight_article(self):
+    def test_a_user_can_highlight_article_body(self):
         """
         Test an authenticated user can successfully highlight an article
         """
@@ -93,3 +93,54 @@ class HighlightArticleTestcase(BaseTest):
         self.assertEqual(highlight.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(
             highlight.data['error'], "The highlighted text is not found in this article body")
+
+    def test_a_user_cannot_highlight_article_more_than_once(self):
+        """
+        Test an authenticated user cannot highlight article twice
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        self.client.post('/api/articles/{}/highlight/'.format(slug),
+                         self.base_data.highlight_data,
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         self.token,
+                         format='json')
+        highlight = self.client.post('/api/articles/{}/highlight/'.format(slug),
+                                     self.base_data.highlight_data,
+                                     HTTP_AUTHORIZATION='Bearer ' +
+                                     self.token,
+                                     format='json')
+
+        self.assertEqual(highlight.status_code, 409)
+
+    def test_a_user_can_highlight_article_title(self):
+        """
+        Test an authenticated user can successfully highlight an article title
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        highlight = self.client.post('/api/articles/{}/highlight/'.format(slug),
+                                     self.base_data.highlight_data_title,
+                                     HTTP_AUTHORIZATION='Bearer ' +
+                                     self.token,
+                                     format='json')
+
+        self.assertEqual(highlight.status_code, 200)
+
+    def test_a_user_can_highlight_article_description(self):
+        """
+        Test an authenticated user can successfully 
+        highlight an article decription
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        highlight = self.client.post('/api/articles/{}/highlight/'.format(slug),
+                                     self.base_data.highlight_data_description,
+                                     HTTP_AUTHORIZATION='Bearer ' +
+                                     self.token,
+                                     format='json')
+
+        self.assertEqual(highlight.status_code, 200)

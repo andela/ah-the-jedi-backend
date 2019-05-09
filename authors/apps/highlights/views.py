@@ -56,5 +56,6 @@ class HighlightArticleView(GenericAPIView):
         serializer.save(article=article, highlighted_by=user)
 
         return Response({
+            "message": "Article successfully highlighted and commented",
             "data": serializer.data
         })
