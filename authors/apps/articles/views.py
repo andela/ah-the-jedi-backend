@@ -551,13 +551,14 @@ class BookmarkArticleView(viewsets.ModelViewSet):
         """
         querysets = BookmarkArticleModel.objects.filter(user=request.user)
         data = []
+        serializer = BookmarkArticleSerializer(querysets)
         for queryset in querysets:
             serializer = BookmarkArticleSerializer(queryset)
             article = serializer.data
             data.append(article)
-            response = {
-                "data": data
-            }
+        response = {
+            "data": data
+        }
         return Response(data=response, status=status.HTTP_200_OK)
 
     def destroy(self, request, slug=None):
