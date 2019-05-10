@@ -12,6 +12,7 @@ omit =
     authors/apps/articles/apps.py
     authors/apps/follows/apps.py
     authors/apps/ratings/apps.py
+    authors/apps/notifications/apps.py
     
 
 [report]
@@ -22,6 +23,7 @@ exclude_lines =
     return serializer.data
     return "{}".format(self.title)
     return self.user.username
+    return self.message
     return Response(status=status.HTTP_200_OK, data=response)
     response = {"email": id_info['email'],"username": user.username,"token": token}
     if user and user.is_active:

@@ -9,6 +9,13 @@ errors = {
                         "status": 400},
     "self_follow": {"errors": "You cannot follow yourself",
                     "status": 403},
+    "subscriptions_missing": {"error": "No subscriptions found for this user",
+                              "status": 404},
+    "notification_missing": {"error": "This notification does not exist",
+                             "status": 404},
+    "not_owner": {
+        "error": "You do not have the permission to perform this action",
+        "status": 403},
 
 
 }

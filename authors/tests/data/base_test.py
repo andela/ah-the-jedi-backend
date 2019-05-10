@@ -258,14 +258,15 @@ class BaseTest(TestCase):
             HTTP_AUTHORIZATION='Bearer ' + token
         )
 
-    def create_article(self):
+    def create_article(self, token=''):
         """
         Method to create an article
         """
+        token = token or self.token
         article = self.client.post('/api/articles/',
                                    self.base_data.article_data,
                                    HTTP_AUTHORIZATION='Bearer ' +
-                                   self.token,
+                                   token,
                                    format='json')
         return article
 
@@ -300,3 +301,81 @@ class BaseTest(TestCase):
                                   HTTP_AUTHORIZATION='Bearer ' +
                                   token,
                                   format='json')
+
+    def fetch_all_notifications(self, token=''):
+        """
+        This method 'fetch_all_notifications'
+        gets all the notification of a specific user
+        """
+
+        return self.client.get(
+            "/api/notifications/all",
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )
+
+    def fetch_read_notifications(self, token=''):
+        """
+        This method 'fetch_read_notifications'
+        gets all the read notifications of a
+        given user
+        """
+
+        return self.client.get(
+            "/api/notifications/read",
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )
+
+    def fetch_unread_notifications(self, token=''):
+        """
+        This method 'fetch_unread_notifications'
+        gets all the unread notifications of a
+        given user
+        """
+
+        return self.client.get(
+            "/api/notifications/unread",
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )
+
+    def fetch_subscriptions(self, token=''):
+        """
+        This method 'fetch_subscriptions'
+        gets all the subscriptions of a
+        given user
+        """
+
+        return self.client.get(
+            "/api/notifications/subscriptions",
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )
+
+    def update_subscriptions(self, data='', token=''):
+        """
+        This method 'update_subscriptions'
+        handles opt in and out of subscriptions
+        """
+
+        data = data or self.base_data.subscription_data
+
+        return self.client.put(
+            "/api/notifications/subscriptions",
+            data,
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )
+
+    def read_notification(self, id, token):
+        """
+        This method 'read_notifications'
+        marks notifications as read
+        """
+
+        return self.client.put(
+            "/api/notifications/read/{}".format(id),
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + token
+        )

@@ -16,9 +16,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='FavoriteArticleModel',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('article', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='favorited_article', to='articles.ArticleModel')),
-                ('favoritor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='favorites', to=settings.AUTH_USER_MODEL)),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
+                ('article', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                              related_name='favorited_article', to='articles.ArticleModel')),
+                ('favoritor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                                related_name='favorites', to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]

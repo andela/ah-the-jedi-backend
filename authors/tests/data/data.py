@@ -49,6 +49,10 @@ class Data:
             }
         }
 
+        self.subscription_data = {
+            "app": "False"
+        }
+
         self.username, self.password = (
             self.user_data["user"]["email"],
             self.user_data["user"]["password"]
