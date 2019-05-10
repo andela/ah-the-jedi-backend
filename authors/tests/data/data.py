@@ -138,3 +138,14 @@ class Data:
             "comment": "this is a sample comment for highlight",
             "location": "title"
         }
+
+        self.highlight_data_invalid_location = {
+            "highlight": "test data",
+            "comment": "this is a sample comment for highlight",
+            "location": "invalid"
+        }
+
+        self.highlight_data_without_location = {
+            "highlight": "test data",
+            "comment": "this is a sample comment for highlight"
+        }

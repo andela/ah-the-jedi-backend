@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
+from .utils import HighlightUtils
 
 from ..articles.models import ArticleModel
 from .serializers import HighlightsSerializer
@@ -22,10 +23,9 @@ class HighlightArticleView(GenericAPIView):
         user = request.user
         highlight = request.data.get("highlight", "")
         location = request.data.get("location")
-        if not location:
-            return Response({
-                "error": "Location field is required"
-            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if HighlightUtils().validate_location(location):
+            return HighlightUtils().validate_location(location)
 
         if article is None:
             response = {
@@ -46,7 +46,9 @@ class HighlightArticleView(GenericAPIView):
             }, status=404)
 
         existing_highlight = HighlightsModel.objects.all().filter(
-            article=article.id, highlighted_by=user.id, highlight=highlight.lstrip(), location=location, position=expected_text.find(highlight))
+            article=article.id, highlighted_by=user.id,
+            highlight=highlight.lstrip(), location=location,
+            position=expected_text.find(highlight))
         if existing_highlight:
             return Response({
                 "error": "You have already highlighted this article",

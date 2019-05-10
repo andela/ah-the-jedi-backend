@@ -133,3 +133,35 @@ class HighlightArticleTestcase(BaseTest):
                                      format='json')
 
         self.assertEqual(highlight.status_code, 200)
+
+    def test_a_user_cannot_highlight_article_with_invalid_location(self):
+        """
+        Test an authenticated user can successfully
+        highlight an article with invalid location
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        highlight = self.client.post('/api/articles/{}/highlight/'.format(slug),
+                                     self.base_data.highlight_data_invalid_location,
+                                     HTTP_AUTHORIZATION='Bearer ' +
+                                     self.token,
+                                     format='json')
+
+        self.assertEqual(highlight.status_code, 400)
+
+    def test_a_user_cannot_highlight_article_without_location(self):
+        """
+        Test an authenticated user can successfully
+        highlight an article with invalid location
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        highlight = self.client.post('/api/articles/{}/highlight/'.format(slug),
+                                     self.base_data.highlight_data_without_location,
+                                     HTTP_AUTHORIZATION='Bearer ' +
+                                     self.token,
+                                     format='json')
+
+        self.assertEqual(highlight.status_code, 400)
