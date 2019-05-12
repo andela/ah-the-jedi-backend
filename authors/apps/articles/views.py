@@ -7,10 +7,11 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import permission_classes
 from .serializers import (ArticleSerializer, TABLE,
                           CommentSerializer, FavoriteArticleSerializer,
-                          BookmarkArticleSerializer)
+                          BookmarkArticleSerializer, TagSerializer)
 from django.contrib.auth.models import User
 from ..authentication.models import User
-from .models import ArticleModel, FavoriteArticleModel, BookmarkArticleModel
+from .models import (ArticleModel, FavoriteArticleModel,
+                     BookmarkArticleModel, TagModel)
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
 )
@@ -67,13 +68,8 @@ class ArticleView(viewsets.ModelViewSet):
         The create article endpoint
         """
         userid = request.user.id
-        title = request.data['title']
-        body = ''
-
-        try:
-            body = request.data['body']
-        except:
-            pass
+        title = request.data.get('title')
+        body = request.data.get('body')
 
         if self.check_if_duplicate(userid, title, body):
             return JsonResponse(
@@ -203,14 +199,20 @@ class ArticleView(viewsets.ModelViewSet):
         """
         request.data['author'] = request.user.id
 
-        body = request.data['body']
+        body = request.data.get('body')
         read_time = readtime.of_text(body)
         request.data['readtime'] = read_time.text
 
-        response = super().create(request)
-        response.data['author'] = user_object(response.data['author'])
-        response.data = add_social_share(response.data)
-        return Response({"status": 201, "data": response.data}, status=201)
+        serializer = ArticleSerializer(data=request.data,
+                                       context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        response = serializer.data
+
+        response['author'] = user_object(response['author'])
+        response = add_social_share(response)
+        return Response({"status": 201, "data": response}, status=201)
 
     def check_if_duplicate(self, userid, title1, body1):
 
@@ -580,3 +582,9 @@ class BookmarkArticleView(viewsets.ModelViewSet):
                 'error': 'Article with slug {} not found'.format(slug)
             }
             return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    """Add tags to an article"""
+    queryset = TagModel.objects.all()
+    serializer_class = TagSerializer

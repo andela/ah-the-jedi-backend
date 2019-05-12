@@ -2,11 +2,12 @@ from django.urls import path, include
 from rest_framework import routers
 from .views import (ArticleView, CommentView, LikeView,
                     DisLikeView, FavoriteArticle, ArticleList,
-                    BookmarkArticleView)
+                    BookmarkArticleView, TagViewSet)
 
 
 router = routers.DefaultRouter()
 router.register('articles', ArticleView)
+# router.register(r'tags', TagViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -21,4 +22,6 @@ urlpatterns = [
     path('articles/<slug>/bookmark/', BookmarkArticleView.as_view({'post': 'create',
                                                                    'get': 'list',
                                                                    'delete': 'destroy'})),
+    path('tags/', TagViewSet.as_view({'get': 'list',
+                                      'post': 'create'})),
 ]
