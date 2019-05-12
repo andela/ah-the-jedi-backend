@@ -1,9 +1,12 @@
 import cloudinary.uploader
 import datetime
+import re
 from rest_framework.response import Response
 from .models import User
-from .models import ArticleModel
+from .models import ArticleModel, TagModel
 from django_filters import FilterSet, rest_framework
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 
 def ImageUploader(image):
@@ -104,9 +107,40 @@ class ArticleFilter(FilterSet):
                                       lookup_expr='icontains')
     author = rest_framework.CharFilter('author__username',
                                        lookup_expr='icontains')
-    tag = rest_framework.CharFilter('tagList',
-                                    lookup_expr='icontains')
+    # tag = rest_framework.CharFilter('tagList',
+    #                                 lookup_expr='icontains')
 
     class Meta:
         model = ArticleModel
-        fields = ("title", "author", "tag")
+        fields = ("title", "author")
+
+
+class TagField(serializers.RelatedField):
+    """
+    Custom related field for the tags field to ensure a tags table
+    is created on article creation
+    """
+
+    def get_queryset(self):
+
+        return TagModel.objects.all()
+
+    def to_representation(self, value):
+        """
+        Return the representation that should be used to serialize the field
+        """
+
+        return value.tagname
+
+    def to_internal_value(self, data):
+        """
+        Validate data and restore it back into its internal
+        python representation
+        """
+        if data:
+            if not re.match(r'^[a-zA-Z0-9][ A-Za-z0-9_-]*$', data):
+                raise ValidationError(
+                    detail={'message': "{} is an invalid tag".format(data)})
+
+            tag, created = TagModel.objects.get_or_create(tagname=data)
+            return tag
