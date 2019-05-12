@@ -1,12 +1,16 @@
-import cloudinary.uploader
+"""
+Helper functions and classes for articles
+"""
 import datetime
 import re
-from rest_framework.response import Response
-from .models import User
-from .models import ArticleModel, TagModel
-from django_filters import FilterSet, rest_framework
+import cloudinary.uploader
+from django_filters import (
+    filters, Filter, FilterSet, rest_framework, ModelMultipleChoiceFilter)
+from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from .models import User
+from .models import ArticleModel, TagModel
 
 
 def ImageUploader(image):
@@ -85,7 +89,7 @@ def configure_response(serializer):
 
 def add_social_share(request):
     """
-    Function for adding share url to an article 
+    Function for adding share url to an article
     """
     request['twitter'] = 'https://twitter.com/share?url=' + \
         request['url']+'&amp;text=Checkout this article on ' + \
@@ -99,6 +103,18 @@ def add_social_share(request):
     return request
 
 
+class M2MFilter(Filter):
+
+    def filter(self, qs, value):
+        if not value:
+            return qs
+
+        values = value.split(',')
+        for v in values:
+            qs = qs.filter(tagList=v)
+        return qs
+
+
 class ArticleFilter(FilterSet):
     """
     Custom filter class for articles
@@ -107,12 +123,24 @@ class ArticleFilter(FilterSet):
                                       lookup_expr='icontains')
     author = rest_framework.CharFilter('author__username',
                                        lookup_expr='icontains')
-    # tag = rest_framework.CharFilter('tagList',
-    #                                 lookup_expr='icontains')
+    tag = rest_framework.CharFilter('tagList',
+                                    lookup_expr='iexact',
+                                    method='m2mfilter')
 
     class Meta:
         model = ArticleModel
-        fields = ("title", "author")
+        fields = ("title", "author", "tag")
+
+    def m2mfilter(self, qs, tags, value):
+        """
+        Custom filter for the manytomany tagList field
+        """
+
+        if not value:
+            return qs
+
+        values = value.split(',')
+        return qs.filter(tagList__tagname__in=values).distinct()
 
 
 class TagField(serializers.RelatedField):

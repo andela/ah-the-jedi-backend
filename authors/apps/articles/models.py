@@ -1,11 +1,9 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields import ArrayField
 from authors.apps.authentication.models import User
 from autoslug import AutoSlugField
 from django.core.validators import URLValidator
-from django.template.defaultfilters import slugify
 from vote.models import VoteModel
 
 
