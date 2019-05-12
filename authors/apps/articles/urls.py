@@ -22,6 +22,5 @@ urlpatterns = [
     path('articles/<slug>/bookmark/', BookmarkArticleView.as_view({'post': 'create',
                                                                    'get': 'list',
                                                                    'delete': 'destroy'})),
-    path('tags/', TagViewSet.as_view({'get': 'list',
-                                      'post': 'create'})),
+    path('tags/', TagViewSet.as_view()),
 ]

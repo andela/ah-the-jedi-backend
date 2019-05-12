@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import (generics, permissions,
                             filters, status, views, viewsets, serializers)
 from rest_framework.generics import ListAPIView
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import permission_classes
@@ -584,7 +585,16 @@ class BookmarkArticleView(viewsets.ModelViewSet):
             return Response(data=response, status=status.HTTP_404_NOT_FOUND)
 
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(APIView):
     """Add tags to an article"""
-    queryset = TagModel.objects.all()
-    serializer_class = TagSerializer
+    pagination_class = None
+
+    def get(self, request):
+        """
+        get:
+        The get all tags endpoint
+        """
+
+        queryset = TagModel.objects.all()
+        serializer = TagSerializer(queryset, many=True)
+        return Response({'Tags': serializer.data})
