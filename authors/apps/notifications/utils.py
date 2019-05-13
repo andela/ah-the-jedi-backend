@@ -2,6 +2,8 @@ import os
 
 from django.core.mail import EmailMessage, get_connection
 from django.template.loader import render_to_string
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 
 from . import models
@@ -10,6 +12,24 @@ from ..articles.models import ArticleModel, FavoriteArticleModel
 from ..authentication.messages import errors
 
 domain = os.getenv('DOMAIN')
+
+opt_url = "{}/api/notifications/subscriptions".format(domain)
+
+
+class PageNumberPaginationNotifications(PageNumberPagination):
+
+    def get_paginated_response(self, data):
+        """
+        Returns a Response instance of
+        paginated results
+        """
+
+        return Response({
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'count': self.page.paginator.count,
+            'notifications': data
+        })
 
 
 def make_update(instance, validated_data):
@@ -149,7 +169,8 @@ def save_notifications(username, message, url):
                          url=url).save()
 
 
-def make_message(author, title, url='', opt_url='', comment=False, html=False):
+def make_message(author, title='', url='', opt_url='',
+                 comment='', html='', follow=''):
     """
     Creates and returns a message
     based on the provided params
@@ -157,9 +178,11 @@ def make_message(author, title, url='', opt_url='', comment=False, html=False):
 
     message = comment and "responded to" or "created a new article"
 
-    response = "{} {} '{}'.".format(author, message, title)
+    response = "{} started following you.".format(
+        author) if follow else "{} {} '{}'.".format(author, message, title)
 
-    dictionary = comment and ("NEW COMMENT", "View Comment") or (
+    dictionary = comment and ("NEW COMMENT", "View Comment") or follow and (
+        "NEW FOLLOWER", "View Profile") or (
         "NEW ARTICLE", "View Article")
 
     html_message = render_to_string("notify.html", {
@@ -173,34 +196,39 @@ def make_message(author, title, url='', opt_url='', comment=False, html=False):
     return html_message if html else response
 
 
-def make_notifications(username, title, slug, obj, comment=False):
+def make_notifications(user, article, slug, obj, comment=False):
     """
     Save notification and send email
     """
 
-    url, opt_url = (
-        "{}/api/articles/{}/".format(domain, slug),
-        "{}/api/notifications/subscriptions".format(domain))
+    url = "{}/api/articles/{}/".format(domain, slug)
 
     mail_exlude, app_exclude = (
         fetch_unsubscriptions(), fetch_unsubscriptions(True))
 
     message, html_message, mails = (
-        make_message(username, title, comment=comment),
-        make_message(username, title,
+        make_message(user.username, article.title,
+                     comment=comment, html=False),
+        make_message(user.username, article.title,
                      url, opt_url,
                      comment, True),
-        ''
+        []
     )
 
     if comment:
 
         [save_notifications(favorite.favoritor.username, message, url)
-         for favorite in obj if favorite.favoritor.email not in app_exclude]
+         for favorite in obj if favorite.favoritor.email not in app_exclude and
+         not (user.email in favorite.favoritor.email)]
 
         mails = [fetch_user(username=favorite.favoritor.username).email
                  for favorite in obj if favorite.favoritor.email
                  not in mail_exlude]
+
+        if user.username != article.author.username:
+
+            mails.append(
+                fetch_user(username=article.author.username).email)
 
     else:
 
@@ -209,6 +237,10 @@ def make_notifications(username, title, slug, obj, comment=False):
 
         mails = [fetch_user(username=user.follower.username).email
                  for user in obj if user.follower.email not in mail_exlude]
+
+    if user.email in mails:
+
+        mails.remove(user.email)
 
     send_mail_notification(mails, html_message)
 
@@ -222,7 +254,7 @@ def create_post_notification(sender, **kwargs):
 
     followers = author.followers.all()
 
-    make_notifications(author.username, article.title, article.slug, followers)
+    make_notifications(author, article, article.slug, followers)
 
 
 def create_comment_notification(sender, **kwargs):
@@ -230,15 +262,13 @@ def create_comment_notification(sender, **kwargs):
     Create notification if users comments on favorited article
     """
 
-    slug, username = (
-        kwargs["instance"].object_pk,
-        kwargs["instance"].user.username)
+    slug, user = kwargs["instance"].object_pk, kwargs['instance'].user
 
     article = fetch_articles(slug=slug)
 
     favorites = fetch_favorites(article=article)
 
-    make_notifications(username, article.title, slug, favorites, True)
+    make_notifications(user, article, slug, favorites, True)
 
 
 def create_subscriptions(sender, **kwargs):
@@ -250,3 +280,34 @@ def create_subscriptions(sender, **kwargs):
     if kwargs['created']:
 
         models.Subscriptions.objects.create(user=kwargs["instance"])
+
+
+def create_follow_notification(sender, **kwargs):
+    """
+    Create notifications for followed users
+    """
+
+    if kwargs['created']:
+
+        follower, following, email = (kwargs['instance'].follower.username,
+                                      kwargs['instance'].following.username,
+                                      kwargs['instance'].following.email)
+
+        url = "{}/api/profiles/{}".format(domain, follower)
+
+        mail_exlude, app_exclude = (fetch_unsubscriptions(),
+                                    fetch_unsubscriptions(True))
+
+        message, html_message = (
+            make_message(follower, comment=False, html=False, follow=True),
+            make_message(follower, url, opt_url,
+                         comment=False, html=True, follow=True)
+        )
+
+        if str(email) not in app_exclude:
+
+            save_notifications(following, message, url)
+
+        if str(email) not in mail_exlude:
+
+            send_mail_notification([email], html_message)
