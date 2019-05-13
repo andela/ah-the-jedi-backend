@@ -114,3 +114,38 @@ class Data:
         self.rating_data = {
             "rating": "5"
         }
+
+        self.highlight_data = {
+            "highlight": "the first",
+            "comment": "this is a sample comment for highlight",
+            "location": "body"
+        }
+
+        self.in_existent_highlight_data = {
+            "highlight": "this is so inexistent data, unique",
+            "comment": "this is a sample comment for highlight",
+            "location": "body"
+        }
+
+        self.highlight_data_description = {
+            "highlight": "the first test data",
+            "comment": "this is a sample comment for highlight",
+            "location": "description"
+        }
+
+        self.highlight_data_title = {
+            "highlight": "test data",
+            "comment": "this is a sample comment for highlight",
+            "location": "title"
+        }
+
+        self.highlight_data_invalid_location = {
+            "highlight": "test data",
+            "comment": "this is a sample comment for highlight",
+            "location": "invalid"
+        }
+
+        self.highlight_data_without_location = {
+            "highlight": "test data",
+            "comment": "this is a sample comment for highlight"
+        }

@@ -13,7 +13,7 @@ omit =
     authors/apps/follows/apps.py
     authors/apps/ratings/apps.py
     authors/apps/notifications/apps.py
-    
+    authors/apps/highlights/apps.py
 
 [report]
 exclude_lines =
