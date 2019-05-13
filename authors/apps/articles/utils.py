@@ -103,18 +103,6 @@ def add_social_share(request):
     return request
 
 
-class M2MFilter(Filter):
-
-    def filter(self, qs, value):
-        if not value:
-            return qs
-
-        values = value.split(',')
-        for v in values:
-            qs = qs.filter(tagList=v)
-        return qs
-
-
 class ArticleFilter(FilterSet):
     """
     Custom filter class for articles
