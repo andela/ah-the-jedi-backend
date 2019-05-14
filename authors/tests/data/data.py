@@ -149,3 +149,13 @@ class Data:
             "highlight": "test data",
             "comment": "this is a sample comment for highlight"
         }
+        self.article_tag_data = {
+            'title': 'First test data',
+            'description': 'This is the first test data',
+            'body': 'This is the first body',
+            'tagList': ["react", "python", "jkamz"]
+        }
+
+        self.tag_data = {
+            'tagList': ["react", "python", "jkamz"]
+        }

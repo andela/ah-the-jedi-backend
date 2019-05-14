@@ -1,38 +1,26 @@
-from django.shortcuts import render
-from rest_framework import (generics, permissions,
-                            filters, status, views, viewsets, serializers)
-from rest_framework.generics import ListAPIView
+"""
+Article Views
+"""
+import readtime
+from rest_framework import filters, status, viewsets
+from rest_framework.generics import ListAPIView, GenericAPIView
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.decorators import permission_classes
-from .serializers import (ArticleSerializer, TABLE,
-                          CommentSerializer, FavoriteArticleSerializer,
-                          BookmarkArticleSerializer)
-from django.contrib.auth.models import User
-from ..authentication.models import User
-from .models import ArticleModel, FavoriteArticleModel, BookmarkArticleModel
-from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
-)
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.http import JsonResponse
-from django.core.files.storage import FileSystemStorage
-import json
-from django.http.response import Http404
-import smtplib
-from django.conf import settings
-from django.apps import apps
+from django_filters.rest_framework import DjangoFilterBackend
 from fluent_comments.models import FluentComment
-from django.contrib.contenttypes.models import ContentType
-from rest_framework.generics import (
-    RetrieveUpdateAPIView, GenericAPIView
-)
-from rest_framework.exceptions import ValidationError
+from .serializers import (ArticleSerializer,
+                          CommentSerializer, FavoriteArticleSerializer,
+                          BookmarkArticleSerializer, TagSerializer)
+from .models import (ArticleModel, FavoriteArticleModel,
+                     BookmarkArticleModel, TagModel)
 from .utils import (ImageUploader, user_object,
                     configure_response, add_social_share, ArticleFilter)
-import readtime
-from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -67,13 +55,8 @@ class ArticleView(viewsets.ModelViewSet):
         The create article endpoint
         """
         userid = request.user.id
-        title = request.data['title']
-        body = ''
-
-        try:
-            body = request.data['body']
-        except:
-            pass
+        title = request.data.get('title')
+        body = request.data.get('body')
 
         if self.check_if_duplicate(userid, title, body):
             return JsonResponse(
@@ -162,7 +145,6 @@ class ArticleView(viewsets.ModelViewSet):
         body = request.data.get('body')
         read_time = readtime.of_text(body)
         request.data['readtime'] = read_time.text
-        request.data['slug'] = request.data['title']
         serializer = ArticleSerializer(article,
                                        data=request.data,
                                        context={'request': request},
@@ -203,14 +185,20 @@ class ArticleView(viewsets.ModelViewSet):
         """
         request.data['author'] = request.user.id
 
-        body = request.data['body']
+        body = request.data.get('body')
         read_time = readtime.of_text(body)
         request.data['readtime'] = read_time.text
 
-        response = super().create(request)
-        response.data['author'] = user_object(response.data['author'])
-        response.data = add_social_share(response.data)
-        return Response({"status": 201, "data": response.data}, status=201)
+        serializer = ArticleSerializer(data=request.data,
+                                       context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        response = serializer.data
+
+        response['author'] = user_object(response['author'])
+        response = add_social_share(response)
+        return Response({"status": 201, "data": response}, status=201)
 
     def check_if_duplicate(self, userid, title1, body1):
 
@@ -580,3 +568,18 @@ class BookmarkArticleView(viewsets.ModelViewSet):
                 'error': 'Article with slug {} not found'.format(slug)
             }
             return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+
+class TagViewSet(APIView):
+    """Add tags to an article"""
+    pagination_class = None
+
+    def get(self, request):
+        """
+        get:
+        The get all tags endpoint
+        """
+
+        queryset = TagModel.objects.all()
+        serializer = TagSerializer(queryset, many=True)
+        return Response({'Tags': serializer.data})

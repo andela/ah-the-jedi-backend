@@ -202,8 +202,10 @@ class ModelTestCase(BaseTest):
                              HTTP_AUTHORIZATION='Bearer ' +
                              token,
                              format='json')
-            self.base_data.article_data.update({'title': ''.join(random.choice(letters))})
-            self.base_data.article_data.update({'body': ''.join(random.choice(letters))})
+            self.base_data.article_data.update(
+                {'title': ''.join(random.choice(letters))})
+            self.base_data.article_data.update(
+                {'body': ''.join(random.choice(letters))})
             i = i+1
 
         response = self.client.get('/api/articles/')
@@ -418,3 +420,67 @@ class ModelTestCase(BaseTest):
                                          format='json')
 
         self.assertTrue(post_response.data['data']['readtime'])
+
+    def test_can_add_tags(self):
+        """
+        Test one can add tags when creating articles
+        """
+        token = self.login_user_and_get_token(
+            self.base_data.user_data)
+
+        response = self.client.post('/api/articles/',
+                                    self.base_data.article_tag_data,
+                                    HTTP_AUTHORIZATION='Bearer ' +
+                                    token,
+                                    format='json')
+
+        self.assertEqual(response.status_code,
+                         status.HTTP_201_CREATED)
+
+        self.assertEqual(response.data['data']['tagList'][0], 'react')
+
+        self.assertTrue('tagList' in response.data['data'])
+
+    def test_can_update_tags(self):
+        """
+        Test one can add tags when updating articles
+        """
+        token = self.login_user_and_get_token(
+            self.base_data.user_data)
+
+        response = self.client.post('/api/articles/',
+                                    self.base_data.article_tag_data,
+                                    HTTP_AUTHORIZATION='Bearer ' +
+                                    token,
+                                    format='json')
+
+        article = response.data
+        url = article['data']['url']
+
+        response = self.client.put(url,
+                                   self.base_data.tag_data,
+                                   HTTP_AUTHORIZATION='Bearer ' + token,
+                                   format='json')
+
+        self.assertTrue('tagList' in response.data['data'])
+        self.assertEqual(response.data['data']['tagList'][0], 'react')
+        self.assertEqual(response.status_code,
+                         status.HTTP_201_CREATED)
+
+    def test_can_get_all_tags(self):
+        """
+        Test one get all the tags in the database
+        """
+        token = self.login_user_and_get_token(self.base_data.user_data)
+        self.client.post('/api/articles/',
+                         self.base_data.article_tag_data,
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         token,
+                         format='json')
+
+        response = self.client.get('/api/tags/')
+
+        self.assertTrue('Tags' in response.data)
+        self.assertEqual(response.status_code,
+                         status.HTTP_200_OK)
+        self.assertEqual(response.data['Tags'][0], 'react')

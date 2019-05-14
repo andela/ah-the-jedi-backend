@@ -1,12 +1,21 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields import ArrayField
 from authors.apps.authentication.models import User
 from autoslug import AutoSlugField
 from django.core.validators import URLValidator
-from django.template.defaultfilters import slugify
 from vote.models import VoteModel
+
+
+class TagModel(models.Model):
+    """
+    Tags for articles. The text for each tag is unique
+    """
+
+    tagname = models.CharField(max_length=64, unique=True)
+
+    def __str__(self):
+        return self.tagname
 
 
 class ArticleModel(VoteModel, models.Model):
@@ -17,8 +26,7 @@ class ArticleModel(VoteModel, models.Model):
     title = models.CharField(max_length=254)
     description = models.TextField(blank=False, null=False)
     body = models.TextField(blank=False, null=False)
-    tagList = ArrayField(models.TextField(
-        max_length=128), blank=True, default=list)
+    tagList = models.ManyToManyField(TagModel)
     createdAt = models.DateTimeField(auto_now_add=True, editable=False)
     updatedAt = models.DateTimeField(auto_now_add=True, editable=True)
     favorited = models.BooleanField(default=False)

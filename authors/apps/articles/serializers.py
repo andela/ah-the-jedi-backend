@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from django.apps import apps
-from .models import ArticleModel, FavoriteArticleModel, BookmarkArticleModel
+from .models import (ArticleModel, FavoriteArticleModel,
+                     BookmarkArticleModel, TagModel)
 from fluent_comments.models import FluentComment
-from .utils import user_object, configure_response
+from .utils import user_object, configure_response, TagField
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Avg
 from authors.apps.ratings.models import Ratings
@@ -46,6 +47,11 @@ class ArticleSerializer(serializers.ModelSerializer):
         method_name='rating',
         read_only=True)
 
+    tagList = TagField(
+        many=True,
+        required=False
+    )
+
     class Meta:
         model = TABLE
         fields = (
@@ -75,10 +81,6 @@ class ArticleSerializer(serializers.ModelSerializer):
         )
         lookup_field = 'slug'
         extra_kwargs = {'url': {'lookup_field': 'slug'}}
-
-    def create(self, validated_data):
-        article = TABLE.objects.create(**validated_data)
-        return article
 
     def get_comments(self, obj):
         comment = FluentComment.objects.filter(
@@ -180,3 +182,14 @@ class BookmarkArticleSerializer(serializers.ModelSerializer):
         model = BookmarkArticleModel
         fields = ['author', 'title', 'slug',
                   'description', 'bookmarked_at', 'image']
+
+
+class TagSerializer(serializers.ModelSerializer):
+    """Tag an article serializer"""
+
+    class Meta:
+        model = TagModel
+        fields = ('tagname',)
+
+    def to_representation(self, instance):
+        return instance.tagname
