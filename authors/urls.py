@@ -39,6 +39,7 @@ schema_view = get_schema_view(
 articles_urls = include('authors.apps.articles.urls')
 authentication_urls = include('authors.apps.authentication.urls')
 notification_urls = include('authors.apps.notifications.urls')
+reports_urls = include('authors.apps.reports.urls')
 
 
 urlpatterns = [
@@ -59,4 +60,5 @@ urlpatterns = [
     path('', schema_view.with_ui('swagger',
                                  cache_timeout=0),
          name='schema-swagger-ui'),
+    path('api/', reports_urls),
 ]

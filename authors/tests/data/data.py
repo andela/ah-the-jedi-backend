@@ -163,3 +163,14 @@ class Data:
         self.tag_data = {
             'tagList': ["react", "python", "jkamz"]
         }
+
+        self.report_data = {
+            "reason": "this is a test reason"
+        }
+
+        self.super_user = {
+            "user": {
+                "email": "admin@root.com",
+                "password": "Admin1211"
+            }
+        }
