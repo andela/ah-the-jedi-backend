@@ -379,3 +379,11 @@ class BaseTest(TestCase):
             format='json',
             HTTP_AUTHORIZATION='Bearer ' + token
         )
+
+    def create_comment(self, slug):
+        comment = self.client.post('/api/articles/{}/comments/'.format(slug),
+                                   self.base_data.comment_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.token,
+                                   format='json')
+        return comment

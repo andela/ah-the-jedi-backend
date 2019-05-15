@@ -7,7 +7,6 @@ from django.core.validators import URLValidator
 from vote.models import VoteModel
 from fluent_comments.models import FluentComment
 
-
 class TagModel(models.Model):
     """
     Tags for articles. The text for each tag is unique
@@ -83,3 +82,12 @@ class CommentHistoryModel(models.Model):
     comment = models.ForeignKey(FluentComment, on_delete=models.CASCADE)
     updated_comment = models.TextField()
     updated_at = models.DateTimeField(auto_now_add=True)
+
+    
+class CommentModel(VoteModel, models.Model):
+    """The comment model"""
+    comment = models.ForeignKey(FluentComment,
+                                related_name='comment_id',
+                                on_delete=models.CASCADE, default='')
+    user = models.ForeignKey(
+        User, related_name='user', on_delete=models.CASCADE)

@@ -8,12 +8,13 @@ from django_filters import (
     filters, Filter, FilterSet, rest_framework, ModelMultipleChoiceFilter)
 from django.db.models import Q
 from rest_framework import serializers, status
-from rest_framework.exceptions import ValidationError
 from .models import User
-from .models import ArticleModel, TagModel
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
 from fluent_comments.models import FluentComment
+from .models import ArticleModel, TagModel, CommentModel
+from django.http import JsonResponse
+from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework import status
 
 
 def ImageUploader(image):
@@ -84,7 +85,15 @@ def configure_response(serializer):
     data = []
     for comment in serializer.data:
         dictionary = dict(comment)
+
+        comment_votes = CommentModel.objects.filter(
+            comment=dictionary['id']).first()
+
         dictionary['author'] = user_object(dictionary['user_id'])
+        if comment_votes:
+            dictionary['votes_score'] = comment_votes.vote_score
+            dictionary['num_vote_down'] = comment_votes.num_vote_down
+            dictionary['num_vote_up'] = comment_votes.num_vote_up
         del dictionary['user_id']
         data.append(dictionary)
     return data
@@ -187,3 +196,15 @@ def get_comment_queryset(request, slug):
         queryset = None
 
     return queryset
+
+def check_article(slug):
+    """
+    Function that checks if an article exists
+    """
+    slug_exists = ArticleModel.objects.filter(slug=slug)
+    if not slug_exists:
+        raise NotFound(
+            {'status': 404,
+             'error': 'Article with slug {} not found'.format(slug)})
+    else:
+        return True

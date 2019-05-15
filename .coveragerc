@@ -14,7 +14,7 @@ omit =
     authors/apps/ratings/apps.py
     authors/apps/notifications/apps.py
     authors/apps/highlights/apps.py
-    authors/apps/notifications/utils.py 
+    authors/apps/notifications/utils.py
     authors/apps/profiles/utils.py
     authors/apps/reports/apps.py
 
@@ -43,3 +43,10 @@ exclude_lines =
     twitter = OAuth1Session(client_key=os.environ.get('SOCIAL_AUTH_TWITTER_KEY'),client_secret=os.environ.get('SOCIAL_AUTH_TWITTER_SECRET'),resource_owner_key=serializer.initial_data.get('access_token'),resource_owner_secret=serializer.initial_data.get('access_token_secret'))
     return [permission() for permission in self.permission_classes]
     for report in serializer.data:
+    response['votes'] = comment_votes.vote_score
+    response['num_vote_down'] = comment_votes.num_vote_down
+    response['num_vote_up'] = comment_votes.num_vote_up
+    response['author'] = user_object(response['user_id'])
+    response = serializer.data
+    del response['user_id']
+    serializer = HighlightsSerializer(highlighted, many=True)
