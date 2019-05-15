@@ -16,11 +16,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from fluent_comments.models import FluentComment
 from .serializers import (ArticleSerializer,
                           CommentSerializer, FavoriteArticleSerializer,
-                          BookmarkArticleSerializer, TagSerializer, CommentHistorySerializer)
+                          BookmarkArticleSerializer, TagSerializer,
+                          CommentHistorySerializer)
 from .models import (ArticleModel, FavoriteArticleModel,
                      BookmarkArticleModel, TagModel, CommentHistoryModel)
 from .utils import (ImageUploader, user_object,
-                    configure_response, add_social_share, ArticleFilter, get_comment_queryset)
+                    configure_response, add_social_share, ArticleFilter,
+                    get_comment_queryset)
 import readtime
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -300,25 +302,26 @@ class CommentView(viewsets.ModelViewSet):
 
             if not queryset:
                 response = {
-                    'error': 'No comment with id {} found for article with slug {}'.format(comment_id, slug)
+                    'error': 'No comment with id {} found for article '
+                             'with slug {}'.format(comment_id, slug)
                 }
                 return Response(data=response, status=status.HTTP_404_NOT_FOUND)
 
             old_comment = queryset.comment
-            if request.data['comment'] == old_comment:
-                response = {
-                    'error': 'This is the currrent comment'
-                }
-                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
-
             if queryset.user != request.user:
                 response = {
                     'error': 'You cannot update a comment you do not own.'
                 }
                 return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
 
-            comment, created = CommentHistoryModel.objects.get_or_create(updated_comment=old_comment,
-                                                                         comment=queryset)
+            if request.data['comment'] == old_comment:
+                response = {
+                    'error': 'This is the current comment'
+                }
+                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+            comment, created = CommentHistoryModel.objects.get_or_create(
+                updated_comment=old_comment, comment=queryset)
             serializer = CommentSerializer(
                 queryset, request.data)
             serializer.is_valid(raise_exception=True)

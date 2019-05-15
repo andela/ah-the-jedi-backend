@@ -7,7 +7,6 @@ from .views import (ArticleView, CommentView, LikeView,
 
 router = routers.DefaultRouter()
 router.register('articles', ArticleView)
-# router.register(r'tags', TagViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -1,14 +1,7 @@
-import json
 from rest_framework import status
-# from authors.apps.authentication.models import User
-# from rest_framework import status
 from rest_framework.test import APIClient
 from .base_test import BaseTest
-# from authors.settings import SECRET_KEY
-# from django.urls import reverse
 from .data import Data
-# from ...apps.articles.models import ArticleModel
-# from ...apps.articles.views import ArticleView
 
 
 class CommentHistoryTestCase(BaseTest):
@@ -55,11 +48,10 @@ class CommentHistoryTestCase(BaseTest):
                                    self.token,
                                    format='json')
         comment_id = comment.data['id']
-        update_comment = self.client.put('/api/articles/{}/comments/?id={}'.format(slug, comment_id),
-                                         self.base_data.comment1_data,
-                                         HTTP_AUTHORIZATION='Bearer ' +
-                                         self.token,
-                                         format='json')
+        update_comment = self.client.put(
+            '/api/articles/{}/comments/?id={}'.format(slug, comment_id),
+            self.base_data.comment1_data, HTTP_AUTHORIZATION='Bearer ' +
+            self.token, format='json')
 
         self.assertEqual(update_comment.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -78,16 +70,15 @@ class CommentHistoryTestCase(BaseTest):
                                    self.token,
                                    format='json')
         comment_id = comment.data['id']
-        update_comment = self.client.put('/api/articles/{}/comments/?id={}'.format(slug, comment_id),
-                                         self.base_data.comment_data,
-                                         HTTP_AUTHORIZATION='Bearer ' +
-                                         self.token,
-                                         format='json')
+        update_comment = self.client.put(
+            '/api/articles/{}/comments/?id={}'.format(slug, comment_id),
+            self.base_data.comment_data, HTTP_AUTHORIZATION='Bearer ' +
+            self.token, format='json')
 
         self.assertEqual(update_comment.status_code,
                          status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            update_comment.data['error'], 'This is the currrent comment')
+            update_comment.data['error'], 'This is the current comment')
 
     def test_update_comment_with_unexisting_slug(self):
         """
@@ -102,11 +93,10 @@ class CommentHistoryTestCase(BaseTest):
                                    self.token,
                                    format='json')
         comment_id = comment.data['id']
-        update_comment = self.client.put('/api/articles/{}/comments/?id={}'.format("abc", comment_id),
-                                         self.base_data.comment1_data,
-                                         HTTP_AUTHORIZATION='Bearer ' +
-                                         self.token,
-                                         format='json')
+        update_comment = self.client.put(
+            '/api/articles/{}/comments/?id={}'.format("abc", comment_id),
+            self.base_data.comment1_data, HTTP_AUTHORIZATION='Bearer ' +
+            self.token, format='json')
 
         self.assertEqual(update_comment.status_code,
                          status.HTTP_400_BAD_REQUEST)
@@ -123,18 +113,17 @@ class CommentHistoryTestCase(BaseTest):
                                    HTTP_AUTHORIZATION='Bearer ' +
                                    self.token,
                                    format='json')
-        update_comment = self.client.put('/api/articles/{}/comments/?id={}'.format(slug, ""),
-                                         self.base_data.comment1_data,
-                                         HTTP_AUTHORIZATION='Bearer ' +
-                                         self.token,
-                                         format='json')
+        update_comment = self.client.put(
+            '/api/articles/{}/comments/?id={}'.format(slug, ""),
+            self.base_data.comment1_data, HTTP_AUTHORIZATION='Bearer ' +
+            self.token, format='json')
 
         self.assertEqual(update_comment.status_code,
                          status.HTTP_400_BAD_REQUEST)
 
     def test_update_comment_with_comment_id_that_does_not_exist(self):
         """
-        Test a user cannot update a comment with a comment_id that does not exist
+        Test a user can't update a comment with comment_id that doesn't exist
         """
         article = self.create_article()
         slug = article.data['data']['slug']
@@ -144,15 +133,15 @@ class CommentHistoryTestCase(BaseTest):
                                    HTTP_AUTHORIZATION='Bearer ' +
                                    self.token,
                                    format='json')
-        update_comment = self.client.put('/api/articles/{}/comments/?id={}'.format(slug, 23),
-                                         self.base_data.comment1_data,
-                                         HTTP_AUTHORIZATION='Bearer ' +
-                                         self.token,
-                                         format='json')
+        update_comment = self.client.put(
+            '/api/articles/{}/comments/?id={}'.format(slug, 23),
+            self.base_data.comment1_data, HTTP_AUTHORIZATION='Bearer ' +
+            self.token, format='json')
 
-        self.assertEqual(update_comment.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(
-            update_comment.data['error'], 'No comment with id 23 found for article with slug first-test-data')
+        self.assertEqual(update_comment.status_code,
+                         status.HTTP_404_NOT_FOUND)
+        self.assertEqual(update_comment.data['error'], "No comment with id "
+                         "23 found for article with slug first-test-data")
 
     def test_a_user_cannot_update_a_comment_they_do_not_own(self):
         """
@@ -167,13 +156,60 @@ class CommentHistoryTestCase(BaseTest):
                                    self.token,
                                    format='json')
         comment_id = comment.data['id']
-        update_comment = self.client.put('/api/articles/{}/comments/?id={}'.format(slug, comment_id),
-                                         self.base_data.comment1_data,
-                                         HTTP_AUTHORIZATION='Bearer ' +
-                                         self.token2,
-                                         format='json')
+        update_comment = self.client.put(
+            '/api/articles/{}/comments/?id={}'.format(slug, comment_id),
+            self.base_data.comment1_data, HTTP_AUTHORIZATION='Bearer ' +
+            self.token2, format='json')
 
         self.assertEqual(update_comment.status_code,
                          status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            update_comment.data['error'], 'You cannot update a comment you do not own.')
+            update_comment.data['error'],
+            'You cannot update a comment you do not own.')
+
+    def test_a_user_can_get_all_edit_history_of_a_comment(self):
+        """
+        Test an authenticated user can get all edit history of a comment
+        """
+        article = self.create_article()
+        slug = article.data['data']['slug']
+
+        comment = self.client.post('/api/articles/{}/comments/'.format(slug),
+                                   self.base_data.comment_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.token,
+                                   format='json')
+        comment_id = comment.data['id']
+        update_comment = self.client.put(
+            '/api/articles/{}/comments/?id={}'.format(slug, comment_id),
+            self.base_data.comment1_data, HTTP_AUTHORIZATION='Bearer ' +
+            self.token, format='json')
+        get_edit_history = self.client.get(
+            '/api/articles/{}/comments/{}/history/'.format(slug, comment_id),
+            HTTP_AUTHORIZATION='Bearer ' + self.token2)
+
+        self.assertEqual(get_edit_history.status_code,
+                         status.HTTP_200_OK)
+
+    def test_message_when_there_are_no_comments_edit_history(self):
+        """
+        Test user can get a message when there are no comments edit history
+        """
+        article = self.create_article()
+        slug = article.data['data']['slug']
+
+        comment = self.client.post('/api/articles/{}/comments/'.format(slug),
+                                   self.base_data.comment_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.token,
+                                   format='json')
+        comment_id = comment.data['id']
+        get_edit_history = self.client.get(
+            '/api/articles/{}/comments/{}/history/'.format(slug, comment_id),
+            HTTP_AUTHORIZATION='Bearer ' + self.token)
+
+        self.assertEqual(get_edit_history.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            get_edit_history.data['message'], 'This comment has not been '
+            'edited')
