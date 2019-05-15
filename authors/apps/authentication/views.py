@@ -16,7 +16,8 @@ from .backends import handle_token
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer,
-    UserSerializer, UidAndTokenSerializer, SocialSerializer
+    UserSerializer, UidAndTokenSerializer, SocialSerializer,
+    ResetPasswordSerializer
 )
 from authors.apps.authentication.models import User
 from authors.apps.core import exceptions
@@ -36,6 +37,10 @@ from google.auth.transport import requests
 from authors import settings
 from requests_oauthlib import OAuth1Session
 import json
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.inspectors import SwaggerAutoSchema
+from drf_yasg import openapi
+
 
 User = get_user_model()
 
@@ -50,6 +55,24 @@ class RegistrationAPIView(GenericAPIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
 
+    swagger_schema = SwaggerAutoSchema
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "user": openapi.Schema(
+                    required=['email', 'username', 'password'],
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'email': openapi.Schema(type=openapi.TYPE_STRING,
+                                                format=openapi.FORMAT_EMAIL),
+                        'username': openapi.Schema(type=openapi.TYPE_STRING),
+                        'password': openapi.Schema(type=openapi.TYPE_STRING)
+                    })
+            },
+        )
+    )
     def post(self, request):
         user = request.data.get('user', {})
 
@@ -78,6 +101,21 @@ class LoginAPIView(GenericAPIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "user": openapi.Schema(
+                    required=['email', 'password'],
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'email': openapi.Schema(type=openapi.TYPE_STRING,
+                                                format=openapi.FORMAT_EMAIL),
+                        'password': openapi.Schema(type=openapi.TYPE_STRING)
+                    })
+            },
+        )
+    )
     def post(self, request):
         user = request.data.get('user', {})
 
@@ -171,7 +209,7 @@ class ResetPasswordView(GenericAPIView):
     post:
     Request password reset Link.
     """
-    serializer_class = UidAndTokenSerializer
+    serializer_class = ResetPasswordSerializer
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):

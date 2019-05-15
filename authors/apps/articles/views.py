@@ -333,7 +333,6 @@ class CommentView(viewsets.ModelViewSet):
 class LikeView(GenericAPIView):
     """The like view for articles"""
     permission_classes = [IsAuthenticated]
-    serializer_class = ArticleSerializer
 
     def post(self, request, *args, **kwargs):
         slug = self.kwargs.get('slug')
@@ -367,7 +366,6 @@ class LikeView(GenericAPIView):
 class DisLikeView(GenericAPIView):
     """The like view for articles"""
     permission_classes = [IsAuthenticated]
-    serializer_class = ArticleSerializer
 
     def post(self, request, *args, **kwargs):
         slug = self.kwargs.get('slug')

@@ -16,14 +16,30 @@ Including another URLconf
 from django.conf.urls import include
 from django.contrib import admin
 from django.urls import path
-from rest_framework_swagger.views import get_swagger_view
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="The Jedi Authors Haven API",
+        default_version='v1',
+        description=(
+            "We have a vision to create a community of "
+            "like minded authors to foster inspiration "
+            "and innovation by leveraging the modern web."),
+        contact=openapi.Contact(email="<jedi.authors.haven@gmail.com"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 
 articles_urls = include('authors.apps.articles.urls')
 authentication_urls = include('authors.apps.authentication.urls')
 notification_urls = include('authors.apps.notifications.urls')
 
-swagger_view = get_swagger_view(title='The Jedi Authors Haven API')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -37,8 +53,10 @@ urlpatterns = [
     path('api/', include(('authors.apps.follows.urls',
                           'follows'), namespace='follows')),
     path('api/', include('authors.apps.ratings.urls')),
-    path('', swagger_view, name="root_url"),
     path('api/', notification_urls),
     path('api/', include(('authors.apps.highlights.urls',
                           'highlights'), namespace='highlights')),
+    path('', schema_view.with_ui('swagger',
+                                 cache_timeout=0),
+         name='schema-swagger-ui'),
 ]

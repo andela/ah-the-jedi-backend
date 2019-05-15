@@ -201,3 +201,8 @@ class SocialSerializer(serializers.Serializer):
         max_length=4096, required=True, trim_whitespace=True)
     access_token_secret = serializers.CharField(
         max_length=255, allow_blank=True, default="")
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """serializer for requesting password reset"""
+    email = serializers.EmailField()

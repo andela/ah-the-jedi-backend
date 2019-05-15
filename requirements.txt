@@ -29,12 +29,14 @@ django-threadedcomments==1.2
 django-vote==2.1.7
 djangorestframework==3.9.2
 djangorestframework-jwt==1.11.0
+drf-yasg==1.15.0
 entrypoints==0.3
 flake8==3.7.7
 google==2.0.2
 google-auth==1.6.3
 gunicorn==19.9.0
 idna==2.8
+inflection==0.3.1
 isort==4.3.17
 itypes==1.1.0
 Jinja2==2.10.1
@@ -72,6 +74,7 @@ readtime==1.1.1
 requests==2.21.0
 requests-oauthlib==1.2.0
 rsa==4.0
+ruamel.yaml==0.15.94
 simplejson==3.16.0
 six==1.10.0
 social-auth-app-django==3.1.0
