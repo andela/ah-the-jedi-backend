@@ -7,10 +7,13 @@ import cloudinary.uploader
 from django_filters import (
     filters, Filter, FilterSet, rest_framework, ModelMultipleChoiceFilter)
 from django.db.models import Q
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from .models import User
 from .models import ArticleModel, TagModel
+from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
+from fluent_comments.models import FluentComment
 
 
 def ImageUploader(image):
@@ -160,3 +163,27 @@ class TagField(serializers.RelatedField):
 
             tag, created = TagModel.objects.get_or_create(tagname=data)
             return tag
+
+def get_comment_queryset(request, slug):
+    article = ArticleModel.objects.filter(slug=slug).first()
+    if article is None:
+        response = {
+            'error': 'Article with slug {} not found'.format(slug)
+        }
+        raise ValidationError(response)
+
+    comment_id = request.GET.get('id')
+
+    if not comment_id:
+        response = {
+            'error': 'Please enter a comment id'
+        }
+        raise ValidationError(response)
+
+    try:
+        queryset = FluentComment.objects.get(
+            pk=comment_id, object_pk=slug)
+    except FluentComment.DoesNotExist:
+        queryset = None
+
+    return queryset

@@ -5,6 +5,7 @@ from authors.apps.authentication.models import User
 from autoslug import AutoSlugField
 from django.core.validators import URLValidator
 from vote.models import VoteModel
+from fluent_comments.models import FluentComment
 
 
 class TagModel(models.Model):
@@ -75,3 +76,10 @@ class BookmarkArticleModel(models.Model):
                                 to_field='slug')
     bookmarked_at = models.DateTimeField(
         auto_created=True, auto_now=False, default=timezone.now)
+
+
+class CommentHistoryModel(models.Model):
+    """Comments edit history model"""
+    comment = models.ForeignKey(FluentComment, on_delete=models.CASCADE)
+    updated_comment = models.TextField()
+    updated_at = models.DateTimeField(auto_now_add=True)
