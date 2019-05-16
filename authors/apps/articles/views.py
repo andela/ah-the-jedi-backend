@@ -7,9 +7,14 @@ from rest_framework.generics import ListAPIView, GenericAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from rest_framework.decorators import permission_classes
+from django.contrib.auth.models import User
+from ..authentication.models import User
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
+)
 from django.utils import timezone
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -19,11 +24,10 @@ from .serializers import (ArticleSerializer,
                           BookmarkArticleSerializer, TagSerializer,
                           CommentHistorySerializer)
 from .models import (ArticleModel, FavoriteArticleModel,
-                     BookmarkArticleModel, TagModel, CommentHistoryModel)
+                     BookmarkArticleModel, TagModel, CommentHistoryModel, CommentModel)
 from .utils import (ImageUploader, user_object,
                     configure_response, add_social_share, ArticleFilter,
-                    get_comment_queryset)
-import readtime
+                    get_comment_queryset, check_article)
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from django_comments import get_model as get_comments_model
@@ -280,6 +284,9 @@ class CommentView(viewsets.ModelViewSet):
                                                    site_id=settings.SITE_ID,
                                                    parent_id=parent)
 
+            user = User.objects.filter(pk=self.request.user.id).first()
+            CommentModel.objects.create(comment_id=comment.id, user=user)
+
             serializer = CommentSerializer(
                 comment, context={'request': request})
 
@@ -354,9 +361,15 @@ class CommentView(viewsets.ModelViewSet):
                 status=404)
 
         if queryset.count() == 1:
+            comment_votes = CommentModel.objects.filter(
+                comment=queryset.first().id).first()
+
             response = Response(serializer.data)
             response = dict(response.data[0].items())
             response['author'] = user_object(response['user_id'])
+            response['votes'] = comment_votes.vote_score
+            response['num_vote_down'] = comment_votes.num_vote_down
+            response['num_vote_up'] = comment_votes.num_vote_up
             del response['user_id']
             return Response({"Comment": response})
 
@@ -364,6 +377,70 @@ class CommentView(viewsets.ModelViewSet):
         return Response(
             {"Comments": data,
              "commentsCount": queryset.count()})
+
+
+class CommentLikeView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs.get('slug')
+        comment_id = self.kwargs.get('id')
+
+        check_article(slug)
+
+        comment_exists = CommentModel.objects.filter(
+            comment=comment_id).first()
+        if not comment_exists:
+            return JsonResponse(
+                {'status': 404,
+                 'error': 'Comment with id {} not found'.format(comment_id)},
+                status=404)
+
+        check_vote = comment_exists.votes.exists(request.user.id)
+
+        if check_vote:
+            comment_exists.votes.delete(request.user.id)
+            return JsonResponse({
+                "status": 200,
+                "message": "You have deleted this like", },
+                status=200)
+        comment_exists.votes.up(request.user.id)
+
+        return JsonResponse({
+            "status": 200,
+            "message": "You have liked this comment", },
+            status=200)
+
+
+class CommentDisLikeView(GenericAPIView):
+    """The like view for articles"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs.get('slug')
+        comment_id = self.kwargs.get('id')
+
+        check_article(slug)
+
+        comment_exists = CommentModel.objects.filter(
+            comment=comment_id).first()
+
+        if not comment_exists:
+            return JsonResponse(
+                {'status': 404,
+                 'error': 'Comment with id {} not found'.format(comment_id)},
+                status=404)
+
+        vote_down = comment_exists.votes.down(request.user.id)
+
+        if vote_down:
+            return JsonResponse({"status": 200,
+                                 "message": "You have Disliked this comment", },
+                                status=200)
+        comment_exists.votes.delete(request.user.id)
+        return JsonResponse({"status": 200,
+                             "message": "You have deleted this dislike", },
+                            status=200)
 
 
 class LikeView(GenericAPIView):

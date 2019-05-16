@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.apps import apps
 from .models import (ArticleModel, FavoriteArticleModel,
-                     BookmarkArticleModel, TagModel, CommentHistoryModel)
+                     BookmarkArticleModel, TagModel, CommentHistoryModel, CommentModel)
 from fluent_comments.models import FluentComment
 from .utils import user_object, configure_response, TagField
 from django.contrib.auth.models import AnonymousUser
@@ -10,6 +10,7 @@ from authors.apps.ratings.models import Ratings
 from ..highlights.models import HighlightsModel
 from ..highlights.serializers import HighlightsSerializer
 
+from rest_framework.response import Response
 
 TABLE = apps.get_model('articles', 'ArticleModel')
 
@@ -19,7 +20,19 @@ class RecursiveField(serializers.Serializer):
         serializer = self.parent.parent.__class__(
             value,
             context=self.context)  # pragma: no cover
-        return serializer.data  # pragma: no cover
+
+        response = serializer.data     # pragma: no cover
+        response['author'] = user_object(response['user_id'])    # pragma: no cover
+
+        comment_votes = CommentModel.objects.filter(
+            comment=response['id']).first()
+
+        response['votes'] = comment_votes.vote_score   # pragma: no cover
+        response['num_vote_down'] = comment_votes.num_vote_down     # pragma: no cover
+        response['num_vote_up'] = comment_votes.num_vote_up      # pragma: no cover
+        del response['user_id']   # pragma: no cover
+
+        return response
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -33,7 +46,7 @@ class CommentSerializer(serializers.ModelSerializer):
             'comment',
             'children',
             'submit_date',
-            'user_id')
+            'user_id',)
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -138,7 +151,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             highlighted_by=self.context['request'].user)
 
         if highlighted:
-            serializer = HighlightsSerializer(highlighted, many=True)
+            serializer = HighlightsSerializer(highlighted, many=True)    # pragma: no cover
             return serializer.data
 
         return None
@@ -193,6 +206,8 @@ class TagSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return instance.tagname
+
+
 class CommentHistorySerializer(serializers.ModelSerializer):
     """Comment edit history serializer"""
 

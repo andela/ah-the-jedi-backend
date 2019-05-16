@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 from .views import (ArticleView, CommentView, LikeView,
                     DisLikeView, FavoriteArticle, ArticleList,
-                    BookmarkArticleView, TagViewSet, CommentHistory)
+                    BookmarkArticleView, TagViewSet, CommentLikeView, CommentDisLikeView, CommentHistory)
 
 
 router = routers.DefaultRouter()
@@ -13,6 +13,8 @@ urlpatterns = [
     path('articles/<slug>/comments/', CommentView.as_view({'post': 'create',
                                                            'get': 'list',
                                                            'put': 'update'})),
+    path('articles/<slug>/comments/<id>/like/', CommentLikeView.as_view()),
+    path('articles/<slug>/comments/<id>/dislike/', CommentDisLikeView.as_view()),
     path('articles/<slug>/like/', LikeView.as_view()),
     path('articles/<slug>/dislike/', DisLikeView.as_view()),
     path('articles/<slug>/favorite/', FavoriteArticle.as_view({'post': 'create',
