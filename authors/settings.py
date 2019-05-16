@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'django_filters',
     'authors.apps.highlights',
     'drf_yasg',
+    'authors.apps.reports'
 ]
 
 COMMENTS_APP = 'fluent_comments'
