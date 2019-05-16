@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'authors.apps.profiles',
     'authors.apps.follows',
     'authors.apps.notifications',
-    'rest_framework_swagger',
     'mailer',
     'authors.apps.articles',
     'oauth2_provider',
@@ -62,6 +61,7 @@ INSTALLED_APPS = [
     'authors.apps.ratings',
     'django_filters',
     'authors.apps.highlights',
+    'drf_yasg',
 ]
 
 COMMENTS_APP = 'fluent_comments'

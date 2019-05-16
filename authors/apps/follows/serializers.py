@@ -8,6 +8,9 @@ class FollowsSerializer(serializers.ModelSerializer):
     Handles serialization and deserialization
     of User Following objects.
     """
+    class Meta:
+        model = UserFollow
+        fields = '__all__'
 
     def to_representation(self, obj):
 
@@ -21,6 +24,10 @@ class FollowersSerializer(serializers.ModelSerializer):
     Handles serialization and deserialization
     of User Followers objects.
     """
+
+    class Meta:
+        model = UserFollow
+        fields = '__all__'
 
     def to_representation(self, obj):
 
