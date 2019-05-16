@@ -20,6 +20,9 @@ class Notifications(models.Model):
 
     createdAt = models.DateTimeField(auto_now_add=True, editable=False)
 
+    class Meta:
+        ordering = ["-createdAt"]
+
     def __str__(self):
 
         return self.message  # pragma: no cover

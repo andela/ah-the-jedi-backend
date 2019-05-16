@@ -10,7 +10,7 @@ from .serializers import NotificationSerializer, SubscriptionsSerializer
 from ..authentication.messages import errors
 
 
-def retreive_notifications(username, read=None):
+def retreive_notifications(username, request, read=None):
     """
     This method retreive notifications
     fetches read, unread and all
@@ -18,19 +18,24 @@ def retreive_notifications(username, read=None):
     provided
     """
 
+    paginator = utils.PageNumberPaginationNotifications()
+
+    paginator.page_size = request.GET.get('limit', '9')
+
     user = utils.get_user(username)
 
     notifications = utils.get_notification(user, read=read)
 
-    serializer = NotificationSerializer(notifications, many=True)
+    count = notifications.count()
 
-    response = notifications.count() and {
-        "count": notifications.count(),
-        "notifications": serializer.data
+    page = paginator.paginate_queryset(notifications, request)
 
-    } or {"notifications": "You do not have any notifications"}
+    serializer = NotificationSerializer(page, many=True)
 
-    return response
+    response = paginator.get_paginated_response(data=serializer.data)
+
+    return response if count else Response(
+        {"notifications": "You do not have any notifications"})
 
 
 class NotificationRetreiveView(RetrieveAPIView):
@@ -48,9 +53,7 @@ class NotificationRetreiveView(RetrieveAPIView):
         Fetch all user notifications
         """
 
-        response = retreive_notifications(request.user.username, None)
-
-        return Response(response, status=status.HTTP_200_OK)
+        return retreive_notifications(request.user.username, request, None)
 
 
 class ReadRetreiveView(RetrieveAPIView):
@@ -68,9 +71,25 @@ class ReadRetreiveView(RetrieveAPIView):
         Fetch all read user notifications
         """
 
-        response = retreive_notifications(request.user.username, True)
+        return retreive_notifications(request.user.username, request, True)
 
-        return Response(response, status=status.HTTP_200_OK)
+
+class UnreadRetreiveView(RetrieveAPIView):
+    """
+    get:
+    Get all unread user notifications
+    """
+
+    permission_classes = (IsAuthenticated,)
+    serializer_class = NotificationSerializer
+
+    def retrieve(self, request):
+        """
+        get:
+        Fetch all unread user notifications
+        """
+
+        return retreive_notifications(request.user.username, request, False)
 
 
 class ReadUpdateView(UpdateAPIView):
@@ -105,26 +124,6 @@ class ReadUpdateView(UpdateAPIView):
         serializer.save()
 
         response = {"notification": serializer.data}
-
-        return Response(response, status=status.HTTP_200_OK)
-
-
-class UnreadRetreiveView(RetrieveAPIView):
-    """
-    get:
-    Get all unread user notifications
-    """
-
-    permission_classes = (IsAuthenticated,)
-    serializer_class = NotificationSerializer
-
-    def retrieve(self, request):
-        """
-        get:
-        Fetch all unread user notifications
-        """
-
-        response = retreive_notifications(request.user.username, False)
 
         return Response(response, status=status.HTTP_200_OK)
 

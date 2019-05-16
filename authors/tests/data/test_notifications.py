@@ -50,7 +50,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue("do not have" in notification.data["notifications"])
+        self.assertTrue(notification.data["count"] == 1)
 
         follow = self.follow_user(self.control_username, self.user_token)
 
@@ -64,7 +64,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue(notification.data["count"] == 1)
+        self.assertTrue(notification.data["count"] == 2)
 
     def test_creates_in_app_notification_if_comment(self):
         """
@@ -76,7 +76,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue("do not have" in notification.data["notifications"])
+        self.assertTrue(notification.data["count"] == 1)
 
         article = self.create_article(token=self.control_token)
 
@@ -105,6 +105,18 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
+        self.assertTrue(notification.data["count"] == 2)
+
+    def test_creates_in_app_notification_if_follow(self):
+        """
+        Test creates in_app notification if a user follows
+        another user
+        """
+
+        notification = self.fetch_all_notifications(token=self.user_token)
+
+        self.assertEqual(notification.status_code, status.HTTP_200_OK)
+
         self.assertTrue(notification.data["count"] == 1)
 
     def test_fetches_unread_notifications(self):
@@ -116,7 +128,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue("do not have" in notification.data["notifications"])
+        self.assertTrue(notification.data["count"] == 1)
 
         follow = self.follow_user(self.control_username, self.user_token)
 
@@ -130,7 +142,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue(notification.data["count"] == 1)
+        self.assertTrue(notification.data["count"] == 2)
 
     def test_reads_and_fetches_read_notifications(self):
         """
@@ -142,7 +154,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue("do not have" in notification.data["notifications"])
+        self.assertTrue(notification.data["count"] == 1)
 
         follow = self.follow_user(self.control_username, self.user_token)
 
@@ -153,6 +165,8 @@ class NotificationTest(BaseTest):
         self.assertEqual(article.status_code, status.HTTP_201_CREATED)
 
         notification = self.fetch_all_notifications(token=self.user_token)
+
+        self.assertTrue(notification.data["count"] == 2)
 
         id = notification.data["notifications"][0].get("id", None)
 
@@ -170,7 +184,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue("do not have" in notification.data["notifications"])
+        self.assertTrue(notification.data["count"] == 1)
 
     def test_fetches_subscriptions(self):
         """
@@ -204,7 +218,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue("do not have" in notification.data["notifications"])
+        self.assertTrue(notification.data["count"] == 1)
 
         follow = self.follow_user(self.control_username, self.user_token)
 
@@ -218,7 +232,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue("do not have" in notification.data["notifications"])
+        self.assertTrue(notification.data["count"] == 1)
 
     def test_raises_error_if_reading_articles_not_owned(self):
         """
@@ -230,7 +244,7 @@ class NotificationTest(BaseTest):
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
 
-        self.assertTrue("do not have" in notification.data["notifications"])
+        self.assertTrue(notification.data["count"] == 1)
 
         follow = self.follow_user(self.control_username, self.user_token)
 
