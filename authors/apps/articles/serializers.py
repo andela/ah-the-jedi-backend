@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.apps import apps
 from .models import (ArticleModel, FavoriteArticleModel,
-                     BookmarkArticleModel, TagModel)
+                     BookmarkArticleModel, TagModel, CommentHistoryModel)
 from fluent_comments.models import FluentComment
 from .utils import user_object, configure_response, TagField
 from django.contrib.auth.models import AnonymousUser
@@ -23,7 +23,7 @@ class RecursiveField(serializers.Serializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    children = RecursiveField(many=True)
+    children = RecursiveField(many=True, required=False)
 
     class Meta:
         model = FluentComment
@@ -193,3 +193,9 @@ class TagSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return instance.tagname
+class CommentHistorySerializer(serializers.ModelSerializer):
+    """Comment edit history serializer"""
+
+    class Meta:
+        model = CommentHistoryModel
+        fields = ['updated_comment', 'updated_at']

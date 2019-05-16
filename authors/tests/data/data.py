@@ -111,6 +111,10 @@ class Data:
             "comment": "I like this article"
         }
 
+        self.comment1_data = {
+            "comment": "update comment"
+        }
+
         self.rating_data = {
             "rating": "5"
         }

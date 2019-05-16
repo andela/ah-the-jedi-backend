@@ -16,11 +16,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 from fluent_comments.models import FluentComment
 from .serializers import (ArticleSerializer,
                           CommentSerializer, FavoriteArticleSerializer,
-                          BookmarkArticleSerializer, TagSerializer)
+                          BookmarkArticleSerializer, TagSerializer,
+                          CommentHistorySerializer)
 from .models import (ArticleModel, FavoriteArticleModel,
-                     BookmarkArticleModel, TagModel)
+                     BookmarkArticleModel, TagModel, CommentHistoryModel)
 from .utils import (ImageUploader, user_object,
-                    configure_response, add_social_share, ArticleFilter)
+                    configure_response, add_social_share, ArticleFilter,
+                    get_comment_queryset)
+import readtime
+from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
+from django_comments import get_model as get_comments_model
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -283,6 +289,48 @@ class CommentView(viewsets.ModelViewSet):
             return Response(response.data,
                             status=status.HTTP_201_CREATED)
 
+    def update(self, request, slug=None):
+        """
+        put:
+        Update a comment endpoint
+        """
+
+        if request.user.is_authenticated:
+            slug = self.kwargs.get('slug')
+            queryset = get_comment_queryset(request, slug)
+            comment_id = request.GET.get('id')
+
+            if not queryset:
+                response = {
+                    'error': 'No comment with id {} found for article '
+                             'with slug {}'.format(comment_id, slug)
+                }
+                return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+            old_comment = queryset.comment
+            if queryset.user != request.user:
+                response = {
+                    'error': 'You cannot update a comment you do not own.'
+                }
+                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+            if request.data['comment'] == old_comment:
+                response = {
+                    'error': 'This is the current comment'
+                }
+                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+            comment, created = CommentHistoryModel.objects.get_or_create(
+                updated_comment=old_comment, comment=queryset)
+            serializer = CommentSerializer(
+                queryset, request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            response = Response(serializer.data)
+            response.data['author'] = user_object(request.user.id)
+            del response.data['user_id']
+            return Response({"data": response.data})
+
     def list(self, request, *args, **kwargs):
         """
         get:
@@ -484,6 +532,24 @@ class ArticleList(ListAPIView):
                 data.append(dictionary)
             return self.get_paginated_response(data=data)
         return Response({'status': 404, 'message': 'We could not find what you are looking for.'}, status=404)
+
+
+class CommentHistory(ListAPIView):
+    """
+    Get edit history of a comment.
+    """
+    permission_classes = [AllowAny]
+    serializer_class = CommentHistorySerializer
+
+    def list(self, request, *args, **kwargs):
+        comment_id = self.kwargs.get('id')
+        queryset = CommentHistoryModel.objects.all()
+        history = queryset.filter(comment_id=comment_id)
+        if history.count() < 1:
+            return Response({"message": "This comment has not been edited"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(history, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class BookmarkArticleView(viewsets.ModelViewSet):
