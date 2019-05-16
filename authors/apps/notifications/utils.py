@@ -227,8 +227,13 @@ def make_notifications(user, article, slug, obj, comment=False):
 
         if user.username != article.author.username:
 
-            mails.append(
-                fetch_user(username=article.author.username).email)
+            if article.author.email not in app_exclude:
+
+                save_notifications(article.author.username, message, url)
+
+            if article.author.email not in mail_exlude:
+                mails.append(
+                    fetch_user(username=article.author.username).email)
 
     else:
 
