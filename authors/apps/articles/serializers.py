@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.apps import apps
 from .models import (ArticleModel, FavoriteArticleModel,
-                     BookmarkArticleModel, TagModel, CommentHistoryModel, CommentModel)
+                     BookmarkArticleModel, TagModel,
+                     CommentHistoryModel, CommentModel, ReadStatsModel)
 from fluent_comments.models import FluentComment
 from .utils import user_object, configure_response, TagField
 from django.contrib.auth.models import AnonymousUser
@@ -22,7 +23,8 @@ class RecursiveField(serializers.Serializer):
             context=self.context)  # pragma: no cover
 
         response = serializer.data     # pragma: no cover
-        response['author'] = user_object(response['user_id'])    # pragma: no cover
+        response['author'] = user_object(
+            response['user_id'])    # pragma: no cover
 
         comment_votes = CommentModel.objects.filter(
             comment=response['id']).first()
@@ -64,6 +66,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         many=True,
         required=False
     )
+    read_count = serializers.SerializerMethodField()
+    article_readers = serializers.SerializerMethodField()
 
     class Meta:
         model = TABLE
@@ -91,6 +95,8 @@ class ArticleSerializer(serializers.ModelSerializer):
             'mail',
             'readtime',
             'highlights',
+            'read_count',
+            'article_readers',
         )
         lookup_field = 'slug'
         extra_kwargs = {'url': {'lookup_field': 'slug'}}
@@ -151,10 +157,42 @@ class ArticleSerializer(serializers.ModelSerializer):
             highlighted_by=self.context['request'].user)
 
         if highlighted:
-            serializer = HighlightsSerializer(highlighted, many=True)    # pragma: no cover
+            serializer = HighlightsSerializer(
+                highlighted, many=True)    # pragma: no cover
             return serializer.data
 
         return None
+
+    def get_read_count(self, obj):
+        """
+        Return the number of people who have read an article
+        This is visible to all logged in users
+        """
+        if not self.check_anonymous():
+            read = ReadStatsModel.objects.filter(article=obj).count()
+
+            if read:
+                return read
+            return 0
+        return None
+
+    def get_article_readers(self, obj):
+        """
+        Get the usernames of people who have read an article
+        This is only visible to the author of the article
+        """
+        if self.check_anonymous():
+            return None
+
+        request = self.context.get('request')
+
+        if request.user != obj.author:
+            return None
+
+        read = ReadStatsModel.objects.filter(article=obj)
+        users = [x.user.username for x in read]
+
+        return users
 
 
 class FavoriteArticleSerializer(serializers.ModelSerializer):

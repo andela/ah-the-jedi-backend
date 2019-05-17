@@ -5,16 +5,12 @@ import datetime
 import re
 import cloudinary.uploader
 from django_filters import (
-    filters, Filter, FilterSet, rest_framework, ModelMultipleChoiceFilter)
-from django.db.models import Q
-from rest_framework import serializers, status
-from .models import User
-from rest_framework.response import Response
+    FilterSet, rest_framework)
+from rest_framework import serializers
 from fluent_comments.models import FluentComment
-from .models import ArticleModel, TagModel, CommentModel
-from django.http import JsonResponse
-from rest_framework.exceptions import ValidationError, NotFound
-from rest_framework import status
+from rest_framework.exceptions import (ValidationError, NotFound)
+from .models import (ArticleModel, TagModel,
+                     CommentModel, ReadStatsModel, User)
 
 
 def ImageUploader(image):
@@ -115,6 +111,18 @@ def add_social_share(request):
     return request
 
 
+def save_read_stat(request, article):
+    """ Save a read statitic to db if it does not exist"""
+    if not request.user.is_anonymous:
+        existing_read = ReadStatsModel.objects.all().filter(
+            user=request.user, article=article
+        )
+
+        if not existing_read:
+            ReadStatsModel.objects.create(
+                user=request.user, article=article)
+
+
 class ArticleFilter(FilterSet):
     """
     Custom filter class for articles
@@ -157,7 +165,6 @@ class TagField(serializers.RelatedField):
         """
         Return the representation that should be used to serialize the field
         """
-
         return value.tagname
 
     def to_internal_value(self, data):
@@ -165,6 +172,7 @@ class TagField(serializers.RelatedField):
         Validate data and restore it back into its internal
         python representation
         """
+
         if data:
             if not re.match(r'^[a-zA-Z0-9][ A-Za-z0-9_-]*$', data):
                 raise ValidationError(
@@ -172,6 +180,7 @@ class TagField(serializers.RelatedField):
 
             tag, created = TagModel.objects.get_or_create(tagname=data)
             return tag
+
 
 def get_comment_queryset(request, slug):
     article = ArticleModel.objects.filter(slug=slug).first()
@@ -196,6 +205,7 @@ def get_comment_queryset(request, slug):
         queryset = None
 
     return queryset
+
 
 def check_article(slug):
     """

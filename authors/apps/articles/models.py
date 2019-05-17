@@ -1,11 +1,12 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
-from authors.apps.authentication.models import User
 from autoslug import AutoSlugField
 from django.core.validators import URLValidator
 from vote.models import VoteModel
 from fluent_comments.models import FluentComment
+from authors.apps.authentication.models import User
+
 
 class TagModel(models.Model):
     """
@@ -83,7 +84,7 @@ class CommentHistoryModel(models.Model):
     updated_comment = models.TextField()
     updated_at = models.DateTimeField(auto_now_add=True)
 
-    
+
 class CommentModel(VoteModel, models.Model):
     """The comment model"""
     comment = models.ForeignKey(FluentComment,
@@ -91,3 +92,12 @@ class CommentModel(VoteModel, models.Model):
                                 on_delete=models.CASCADE, default='')
     user = models.ForeignKey(
         User, related_name='user', on_delete=models.CASCADE)
+
+
+class ReadStatsModel(models.Model):
+    """Reading statistics model"""
+    user = models.ForeignKey(
+        User, related_name="read_user", on_delete=models.CASCADE)
+
+    article = models.ForeignKey(
+        ArticleModel, related_name="read_article", on_delete=models.CASCADE)

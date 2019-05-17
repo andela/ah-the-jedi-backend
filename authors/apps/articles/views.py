@@ -9,28 +9,23 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from rest_framework.decorators import permission_classes
 from django.contrib.auth.models import User
-from ..authentication.models import User
-from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
-)
+from rest_framework.permissions import (IsAuthenticated, AllowAny)
 from django.utils import timezone
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from fluent_comments.models import FluentComment
+from ..authentication.models import User
 from .serializers import (ArticleSerializer,
                           CommentSerializer, FavoriteArticleSerializer,
                           BookmarkArticleSerializer, TagSerializer,
                           CommentHistorySerializer)
 from .models import (ArticleModel, FavoriteArticleModel,
-                     BookmarkArticleModel, TagModel, CommentHistoryModel, CommentModel)
+                     BookmarkArticleModel, TagModel,
+                     CommentHistoryModel, CommentModel)
 from .utils import (ImageUploader, user_object,
                     configure_response, add_social_share, ArticleFilter,
-                    get_comment_queryset, check_article)
-from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
-from django_comments import get_model as get_comments_model
+                    get_comment_queryset, check_article, save_read_stat)
 
 
 class ArticleView(viewsets.ModelViewSet):
@@ -121,6 +116,10 @@ class ArticleView(viewsets.ModelViewSet):
             return JsonResponse({"status": 404,
                                  "error": "Article with slug {} not found".format(slug)},
                                 status=404)
+
+        if request.user != article.author:
+            save_read_stat(request, article)
+
         serializer = ArticleSerializer(article,
                                        context={'request': request})
         response = Response(serializer.data)
@@ -217,8 +216,8 @@ class ArticleView(viewsets.ModelViewSet):
 
         duplicate_record = records.filter(
             title=title1.strip()).filter(
-            body=body1.strip()
-        )
+            body=body1.strip())
+
         if duplicate_record.exists():
             return True
         return False
