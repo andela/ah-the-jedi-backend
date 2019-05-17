@@ -107,6 +107,39 @@ class NotificationTest(BaseTest):
 
         self.assertTrue(notification.data["count"] == 2)
 
+    def test_creates_in_app_notifications_for_article_owner_if_commented(self):
+        """
+        Test successful creation of in-app notification for the article owner
+        if users comment on article
+        """
+
+        notification = self.fetch_all_notifications(token=self.control_token)
+
+        self.assertEqual(notification.status_code, status.HTTP_200_OK)
+
+        self.assertTrue(
+            "do not have any" in notification.data["notifications"])
+
+        article = self.create_article(token=self.control_token)
+
+        self.assertEqual(article.status_code, status.HTTP_201_CREATED)
+
+        slug = article.data["data"].get("slug", None)
+
+        comment = self.client.post('/api/articles/{}/comments/'.format(slug),
+                                   self.base_data.comment_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.user_token,
+                                   format='json')
+
+        self.assertEqual(comment.status_code, status.HTTP_201_CREATED)
+
+        notification = self.fetch_all_notifications(token=self.control_token)
+
+        self.assertEqual(notification.status_code, status.HTTP_200_OK)
+
+        self.assertTrue(notification.data["count"] == 1)
+
     def test_creates_in_app_notification_if_follow(self):
         """
         Test creates in_app notification if a user follows
@@ -116,6 +149,85 @@ class NotificationTest(BaseTest):
         notification = self.fetch_all_notifications(token=self.user_token)
 
         self.assertEqual(notification.status_code, status.HTTP_200_OK)
+
+        self.assertTrue(notification.data["count"] == 1)
+
+    def test_does_not_create_in_app_notification_if_owners_comments(self):
+        """
+        Test failure to create in-app notification if the article owner
+        comments on their own article
+        """
+
+        notification = self.fetch_all_notifications(token=self.control_token)
+
+        self.assertEqual(notification.status_code, status.HTTP_200_OK)
+
+        self.assertTrue(
+            "do not have any" in notification.data["notifications"])
+
+        article = self.create_article(token=self.control_token)
+
+        self.assertEqual(article.status_code, status.HTTP_201_CREATED)
+
+        slug = article.data["data"].get("slug", None)
+
+        comment = self.client.post('/api/articles/{}/comments/'.format(slug),
+                                   self.base_data.comment_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.control_token,
+                                   format='json')
+
+        self.assertEqual(comment.status_code, status.HTTP_201_CREATED)
+
+        notification = self.fetch_all_notifications(token=self.control_token)
+
+        self.assertEqual(notification.status_code, status.HTTP_200_OK)
+
+        self.assertTrue(
+            "do not have any" in notification.data["notifications"])
+
+    def test_does_not_create_in_app_notification_if_self_comments(self):
+        """
+        Test failure to create in-app notification for the user who
+        is commenting on an article
+        """
+
+        notification = self.fetch_all_notifications(token=self.user_token)
+
+        author_notifications = self.fetch_all_notifications(
+            token=self.control_token)
+
+        self.assertEqual(notification.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(author_notifications.status_code, status.HTTP_200_OK)
+
+        self.assertTrue(notification.data["count"] == 1)
+
+        self.assertTrue(
+            "do not have any" in author_notifications.data["notifications"])
+
+        article = self.create_article(token=self.control_token)
+
+        self.assertEqual(article.status_code, status.HTTP_201_CREATED)
+
+        slug = article.data["data"].get("slug", None)
+
+        comment = self.client.post('/api/articles/{}/comments/'.format(slug),
+                                   self.base_data.comment_data,
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.user_token,
+                                   format='json')
+
+        self.assertEqual(comment.status_code, status.HTTP_201_CREATED)
+
+        notification = self.fetch_all_notifications(token=self.user_token)
+
+        author_notifications = self.fetch_all_notifications(
+            token=self.control_token)
+
+        self.assertEqual(notification.status_code, status.HTTP_200_OK)
+
+        self.assertTrue(author_notifications.data["count"] == 1)
 
         self.assertTrue(notification.data["count"] == 1)
 
