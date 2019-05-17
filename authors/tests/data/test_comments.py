@@ -35,6 +35,35 @@ class CommentTestCase(BaseTest):
         login = self.login_user()
         self.token = login.data['token']
 
+    def login_user_and_get_token(self, user={}):
+
+        # signup
+        response = self.client.post(
+            "/api/users/",
+            user,
+            format="json"
+        )
+
+        # get signup uid and token
+        uid, token = response.context['uid'], response.context['token']
+
+        # activate user using token
+        self.client.post(
+            "/api/users/activate/?uid={}&token={}".format(uid, token),
+            format="json"
+        )
+
+        # login user using token
+        self.client.post(
+            "/api/users/",
+            user,
+            format="json"
+        )
+
+        # get token
+        res = self.login_user(user)
+        return res.data['token']
+
     def test_a_user_can_create_a_comment(self):
         """
         Test an authenticated user can successfully create a comment
@@ -183,3 +212,90 @@ class CommentTestCase(BaseTest):
 
         comments_data = json.loads(comments.content.decode('utf-8'))
         self.assertEqual(comments.status_code, 404)
+
+    def test_a_user_can_delete_a_comment(self):
+        """
+        Test an authenticated user can successfully delete a comment
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+
+        comment = self.create_comment(slug)
+        comments_data = json.loads(comment.content.decode('utf-8'))
+        id = comments_data['id']
+
+        delete = self.delete_comment(slug, id)
+
+        self.assertEqual(delete.status_code, 200)
+
+    def test_an_unauthenticated_user_cannot_delete_a_comment(self):
+        """
+        Test an unauthenticated user cannot delete a comment
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        comment = self.create_comment(slug)
+        comments_data = json.loads(comment.content.decode('utf-8'))
+        id = comments_data['id']
+
+        delete = self.client.delete('/api/articles/{}/comments/?id={}'.format(slug, id),
+                                    format='json')
+
+        self.assertEqual(
+            delete.data['detail'], "Authentication credentials were not provided.")
+        self.assertEqual(delete.status_code, 401)
+
+    def test_delete_comment_with_unexisting_slug(self):
+        """
+        Test a user cannot delete a comment with an unexisting article slug
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        comment = self.create_comment(slug)
+        comments_data = json.loads(comment.content.decode('utf-8'))
+        id = comments_data['id']
+
+        delete = self.delete_comment(slug="abc", id=id)
+
+        delete = json.loads(delete.content.decode('utf-8'))
+        self.assertEqual(delete['error'], 'Article with slug abc not found')
+        self.assertEqual(delete['status'], 404)
+
+    def test_delete_comment_with_unexisting_comment_id(self):
+        """
+        Test a user cannot delete a comment with an unexisting comment id
+        """
+        article = self.create_article()
+
+        slug = article.data['data']['slug']
+        comment = self.create_comment(slug)
+        comments_data = json.loads(comment.content.decode('utf-8'))
+        id = comments_data['id']
+
+        delete = self.delete_comment(slug=slug, id=17000)
+
+        delete = json.loads(delete.content.decode('utf-8'))
+        self.assertEqual(delete['error'], 'Comment with id 17000 not found')
+        self.assertEqual(delete['status'], 404)
+
+    def test_delete_comment_not_owner(self):
+        """
+        Test cannot delete comment if not owner
+        """
+
+        token = self.login_user_and_get_token(self.base_data.user_data2)
+
+        post_response = self.create_article(token=token)
+        slug = post_response.data['data']['slug']
+
+        comment = self.create_comment(slug)
+        comments_data = json.loads(comment.content.decode('utf-8'))
+        id = comments_data['id']
+
+        delete = self.delete_comment(slug=slug, id=id, token=token)
+
+        self.assertEqual(delete.status_code,
+                         status.HTTP_403_FORBIDDEN)
