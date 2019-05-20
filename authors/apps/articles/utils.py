@@ -100,12 +100,12 @@ def add_social_share(request):
     Function for adding share url to an article
     """
     request['twitter'] = 'https://twitter.com/share?url=' + \
-        request['url']+'&amp;text=Checkout this article on ' + \
+        request['url']+"&amp;text=Checkout this article at Author's Haven on " + \
         request['title']
     request['facebook'] = 'http://www.facebook.com/sharer.php?u=' + \
-        request['url']+'&quote=Checkout this article on ' + \
+        request['url']+"&quote=Checkout this article at Author's Haven on " + \
         request['title']
-    request['mail'] = 'mailto:?subject=Checkout this article on {} read&body={}'.format(
+    request['mail'] = "mailto: ?subject =Checkout this article at Author's Haven on {} read&body={}".format(
         request['title'], request['url'])
 
     return request
