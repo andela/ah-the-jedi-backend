@@ -318,13 +318,13 @@ class CommentView(viewsets.ModelViewSet):
                 response = {
                     'error': 'You cannot update a comment you do not own.'
                 }
-                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+                return Response(data=response, status=status.HTTP_401_UNAUTHORIZED)
 
             if request.data['comment'] == old_comment:
                 response = {
                     'error': 'This is the current comment'
                 }
-                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+                return Response(data=response, status=status.HTTP_409_CONFLICT)
 
             comment, created = CommentHistoryModel.objects.get_or_create(
                 updated_comment=old_comment, comment=queryset)
