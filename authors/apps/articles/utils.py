@@ -188,7 +188,7 @@ def get_comment_queryset(request, slug):
         response = {
             'error': 'Article with slug {} not found'.format(slug)
         }
-        raise ValidationError(response)
+        raise NotFound(response)
 
     comment_id = request.GET.get('id')
 

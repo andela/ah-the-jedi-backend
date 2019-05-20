@@ -76,7 +76,7 @@ class CommentHistoryTestCase(BaseTest):
             self.token, format='json')
 
         self.assertEqual(update_comment.status_code,
-                         status.HTTP_400_BAD_REQUEST)
+                         status.HTTP_409_CONFLICT)
         self.assertEqual(
             update_comment.data['error'], 'This is the current comment')
 
@@ -99,7 +99,7 @@ class CommentHistoryTestCase(BaseTest):
             self.token, format='json')
 
         self.assertEqual(update_comment.status_code,
-                         status.HTTP_400_BAD_REQUEST)
+                         status.HTTP_404_NOT_FOUND)
 
     def test_update_comment_without_comment_id(self):
         """
@@ -162,7 +162,7 @@ class CommentHistoryTestCase(BaseTest):
             self.token2, format='json')
 
         self.assertEqual(update_comment.status_code,
-                         status.HTTP_400_BAD_REQUEST)
+                         status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(
             update_comment.data['error'],
             'You cannot update a comment you do not own.')
