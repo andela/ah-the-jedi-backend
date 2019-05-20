@@ -131,7 +131,7 @@ class ArticleFilter(FilterSet):
                                       lookup_expr='icontains')
     author = rest_framework.CharFilter('author__username',
                                        lookup_expr='icontains')
-    tag = rest_framework.CharFilter('tagList',
+    tag = rest_framework.CharFilter('tag_list',
                                     lookup_expr='iexact',
                                     method='m2mfilter')
 
@@ -141,14 +141,14 @@ class ArticleFilter(FilterSet):
 
     def m2mfilter(self, qs, tags, value):
         """
-        Custom filter for the manytomany tagList field
+        Custom filter for the manytomany tag_list field
         """
 
         if not value:
             return qs
 
         values = value.split(',')
-        return qs.filter(tagList__tagname__in=values).distinct()
+        return qs.filter(tag_list__tagname__in=values).distinct()
 
 
 class TagField(serializers.RelatedField):

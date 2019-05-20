@@ -157,11 +157,11 @@ class Data:
             'title': 'First test data',
             'description': 'This is the first test data',
             'body': 'This is the first body',
-            'tagList': ["react", "python", "jkamz"]
+            'tag_list': ["react", "python", "jkamz"]
         }
 
         self.tag_data = {
-            'tagList': ["react", "python", "jkamz"]
+            'tag_list': ["react", "python", "jkamz"]
         }
 
         self.report_data = {

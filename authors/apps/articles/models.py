@@ -27,11 +27,11 @@ class ArticleModel(VoteModel, models.Model):
     title = models.CharField(max_length=254)
     description = models.TextField(blank=False, null=False)
     body = models.TextField(blank=False, null=False)
-    tagList = models.ManyToManyField(TagModel)
-    createdAt = models.DateTimeField(auto_now_add=True, editable=False)
-    updatedAt = models.DateTimeField(auto_now_add=True, editable=True)
+    tag_list = models.ManyToManyField(TagModel)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now_add=True, editable=True)
     favorited = models.BooleanField(default=False)
-    favoritesCount = models.IntegerField(default=0)
+    favorites_count = models.IntegerField(default=0)
     image = models.TextField(max_length=1000, validators=[
                              URLValidator], null=False, default='')
     num_vote_down = models.IntegerField(default=0)
@@ -55,7 +55,7 @@ class ArticleModel(VoteModel, models.Model):
         return "{}".format(self.title)  # pragma: no cover
 
     class Meta:
-        ordering = ["-createdAt"]
+        ordering = ["-created_at"]
 
 
 class FavoriteArticleModel(models.Model):

@@ -22,8 +22,8 @@ class ReportSerializer(serializers.ModelSerializer):
             'reporter',
             'reported_article',
             'reason',
-            'createdAt',
-            'updatedAt'
+            'created_at',
+            'updated_at'
         )
 
         extra_kwargs = {
