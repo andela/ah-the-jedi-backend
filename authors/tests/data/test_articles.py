@@ -437,9 +437,9 @@ class ModelTestCase(BaseTest):
         self.assertEqual(response.status_code,
                          status.HTTP_201_CREATED)
 
-        self.assertEqual(response.data['data']['tagList'][0], 'react')
+        self.assertEqual(response.data['data']['tag_list'][0], 'react')
 
-        self.assertTrue('tagList' in response.data['data'])
+        self.assertTrue('tag_list' in response.data['data'])
 
     def test_can_update_tags(self):
         """
@@ -462,8 +462,8 @@ class ModelTestCase(BaseTest):
                                    HTTP_AUTHORIZATION='Bearer ' + token,
                                    format='json')
 
-        self.assertTrue('tagList' in response.data['data'])
-        self.assertEqual(response.data['data']['tagList'][0], 'react')
+        self.assertTrue('tag_list' in response.data['data'])
+        self.assertEqual(response.data['data']['tag_list'][0], 'react')
         self.assertEqual(response.status_code,
                          status.HTTP_201_CREATED)
 

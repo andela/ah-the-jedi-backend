@@ -55,14 +55,14 @@ class ArticleSerializer(serializers.ModelSerializer):
     """The article serializer."""
     comments = serializers.SerializerMethodField()
     favorited = serializers.SerializerMethodField()
-    favoritesCount = serializers.SerializerMethodField()
+    favorites_count = serializers.SerializerMethodField()
     highlights = serializers.SerializerMethodField()
 
     average_rating = serializers.SerializerMethodField(
         method_name='rating',
         read_only=True)
 
-    tagList = TagField(
+    tag_list = TagField(
         many=True,
         required=False
     )
@@ -78,11 +78,11 @@ class ArticleSerializer(serializers.ModelSerializer):
             'title',
             'description',
             'body',
-            'tagList',
-            'createdAt',
-            'updatedAt',
+            'tag_list',
+            'created_at',
+            'updated_at',
             'favorited',
-            'favoritesCount',
+            'favorites_count',
             'average_rating',
             'author',
             'image',
@@ -130,7 +130,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         if request:
             return False
 
-    def get_favoritesCount(self, obj):
+    def get_favorites_count(self, obj):
 
         favorited_articles = FavoriteArticleModel.objects.all().filter(
             article=obj).count()

@@ -9,12 +9,12 @@ class NotificationSerializer(serializers.ModelSerializer):
     of Notification objects
     """
 
-    createdAt = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:
         model = Notifications
 
-        fields = ("url", "message", "createdAt", "id", "read")
+        fields = ("url", "message", "created_at", "id", "read")
 
     def update(self, instance, validated_data):
 

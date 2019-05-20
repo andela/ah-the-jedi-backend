@@ -18,10 +18,10 @@ class Notifications(models.Model):
 
     read = models.BooleanField(default=False)
 
-    createdAt = models.DateTimeField(auto_now_add=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
     class Meta:
-        ordering = ["-createdAt"]
+        ordering = ["-created_at"]
 
     def __str__(self):
 

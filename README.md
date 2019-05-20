@@ -48,11 +48,11 @@ The preferred JSON object to be returned by the API should be structured as foll
     "title": "How to train your dragon",
     "description": "Ever wonder how?",
     "body": "It takes a Jacobian",
-    "tagList": ["dragons", "training"],
-    "createdAt": "2016-02-18T03:22:56.637Z",
-    "updatedAt": "2016-02-18T03:48:35.824Z",
+    "tag_list": ["dragons", "training"],
+    "created_at": "2016-02-18T03:22:56.637Z",
+    "updated_at": "2016-02-18T03:48:35.824Z",
     "favorited": false,
-    "favoritesCount": 0,
+    "favorites_count": 0,
     "author": {
       "username": "jake",
       "bio": "I work at statefarm",
@@ -70,11 +70,11 @@ The preferred JSON object to be returned by the API should be structured as foll
     "title": "How to train your dragon",
     "description": "Ever wonder how?",
     "body": "It takes a Jacobian",
-    "tagList": ["dragons", "training"],
-    "createdAt": "2016-02-18T03:22:56.637Z",
-    "updatedAt": "2016-02-18T03:48:35.824Z",
+    "tag_list": ["dragons", "training"],
+    "created_at": "2016-02-18T03:22:56.637Z",
+    "updated_at": "2016-02-18T03:48:35.824Z",
     "favorited": false,
-    "favoritesCount": 0,
+    "favorites_count": 0,
     "author": {
       "username": "jake",
       "bio": "I work at statefarm",
@@ -87,11 +87,11 @@ The preferred JSON object to be returned by the API should be structured as foll
     "title": "How to train your dragon 2",
     "description": "So toothless",
     "body": "It a dragon",
-    "tagList": ["dragons", "training"],
-    "createdAt": "2016-02-18T03:22:56.637Z",
-    "updatedAt": "2016-02-18T03:48:35.824Z",
+    "tag_list": ["dragons", "training"],
+    "created_at": "2016-02-18T03:22:56.637Z",
+    "updated_at": "2016-02-18T03:48:35.824Z",
     "favorited": false,
-    "favoritesCount": 0,
+    "favorites_count": 0,
     "author": {
       "username": "jake",
       "bio": "I work at statefarm",
@@ -99,7 +99,7 @@ The preferred JSON object to be returned by the API should be structured as foll
       "following": false
     }
   }],
-  "articlesCount": 2
+  "articles_count": 2
 }
 ```
 ### Single Comment
@@ -107,8 +107,8 @@ The preferred JSON object to be returned by the API should be structured as foll
 {
   "comment": {
     "id": 1,
-    "createdAt": "2016-02-18T03:22:56.637Z",
-    "updatedAt": "2016-02-18T03:22:56.637Z",
+    "created_at": "2016-02-18T03:22:56.637Z",
+    "updated_at": "2016-02-18T03:22:56.637Z",
     "body": "It takes a Jacobian",
     "author": {
       "username": "jake",
@@ -124,8 +124,8 @@ The preferred JSON object to be returned by the API should be structured as foll
 {
   "comments": [{
     "id": 1,
-    "createdAt": "2016-02-18T03:22:56.637Z",
-    "updatedAt": "2016-02-18T03:22:56.637Z",
+    "created_at": "2016-02-18T03:22:56.637Z",
+    "updated_at": "2016-02-18T03:22:56.637Z",
     "body": "It takes a Jacobian",
     "author": {
       "username": "jake",
@@ -134,7 +134,7 @@ The preferred JSON object to be returned by the API should be structured as foll
       "following": false
     }
   }],
-  "commentsCount": 1
+  "comments_count": 1
 }
 ```
 ### List of Tags
@@ -312,7 +312,7 @@ Example request body:
     "title": "How to train your dragon",
     "description": "Ever wonder how?",
     "body": "You have to believe",
-    "tagList": ["reactjs", "angularjs", "dragons"]
+    "tag_list": ["reactjs", "angularjs", "dragons"]
   }
 }
 ```
@@ -321,7 +321,7 @@ Authentication required, will return an Article
 
 Required fields: `title`, `description`, `body`
 
-Optional fields: `tagList` as an array of Strings
+Optional fields: `tag_list` as an array of Strings
 
 ### Update Article
 

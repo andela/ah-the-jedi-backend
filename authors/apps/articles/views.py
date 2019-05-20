@@ -375,7 +375,7 @@ class CommentView(viewsets.ModelViewSet):
         data = configure_response(serializer)
         return Response(
             {"Comments": data,
-             "commentsCount": queryset.count()})
+             "comments_count": queryset.count()})
 
 
 class CommentLikeView(GenericAPIView):

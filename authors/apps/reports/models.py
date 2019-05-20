@@ -25,11 +25,11 @@ class ReportModel(models.Model):
     )
 
     reason = models.TextField(max_length=700)
-    createdAt = models.DateTimeField(auto_now_add=True, editable=False)
-    updatedAt = models.DateTimeField(auto_now_add=True, editable=True)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now_add=True, editable=True)
 
     def __str__(self):
         return "{}".format(self.user.username)  # pragma: no cover
 
     class Meta:
-        ordering = ["-createdAt"]
+        ordering = ["-created_at"]

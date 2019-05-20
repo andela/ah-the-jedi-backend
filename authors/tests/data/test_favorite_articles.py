@@ -184,7 +184,7 @@ class UserFavoriteArticleTest(BaseTest):
         self.assertEqual(
             json_data['data']['favorited'], False)
         self.assertEqual(
-            json_data['data']['favoritesCount'], 1)
+            json_data['data']['favorites_count'], 1)
 
     def test_false_if_user_is_logged_in(self):
         """
@@ -215,7 +215,7 @@ class UserFavoriteArticleTest(BaseTest):
         self.assertEqual(
             json_data['data']['favorited'], True)
         self.assertEqual(
-            json_data['data']['favoritesCount'], 1)
+            json_data['data']['favorites_count'], 1)
 
     def test_favorited_is_false_by_default(self):
         """

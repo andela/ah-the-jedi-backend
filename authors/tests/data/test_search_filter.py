@@ -104,7 +104,7 @@ class ModelTestCase(BaseTest):
                 self.base_data.user_data)
 
         data = self.base_data.article_data
-        data['tagList'] = ['testTag']
+        data['tag_list'] = ['testTag']
 
         self.client.post('/api/articles/',
                          data,
