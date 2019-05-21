@@ -381,9 +381,21 @@ class BaseTest(TestCase):
         )
 
     def create_comment(self, slug):
-        comment = self.client.post('/api/articles/{}/comments/'.format(slug),
-                                   self.base_data.comment_data,
-                                   HTTP_AUTHORIZATION='Bearer ' +
-                                   self.token,
-                                   format='json')
-        return comment
+        """
+        This method allows a user to create a Comment
+        """
+        return self.client.post('/api/articles/{}/comments/'.format(slug),
+                                self.base_data.comment_data,
+                                HTTP_AUTHORIZATION='Bearer ' +
+                                self.token,
+                                format='json')
+
+    def delete_comment(self, slug, id, token=''):
+        """
+        This method allows a user to delete a Comment
+        """
+        token = token or self.token
+        return self.client.delete('/api/articles/{}/comments/?id={}'.format(slug, id),
+                                  HTTP_AUTHORIZATION='Bearer ' +
+                                  token,
+                                  format='json')

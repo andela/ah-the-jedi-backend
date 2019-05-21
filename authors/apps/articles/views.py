@@ -377,6 +377,41 @@ class CommentView(viewsets.ModelViewSet):
             {"Comments": data,
              "comments_count": queryset.count()})
 
+    def destroy(self, request, *args, **kwargs):
+        """
+        delete:
+        The delete comment endpoint
+        """
+        comment_id = request.GET.get('id')
+        slug = self.kwargs.get('slug')
+
+        article = ArticleModel.objects.filter(slug=slug).first()
+        if not article:
+            return JsonResponse(
+                {'status': 404,
+                 'error': 'Article with slug {} not found'.format(slug)},
+                status=404)
+
+        comment = CommentModel.objects.filter(comment_id=comment_id).first()
+        commenter = FluentComment.objects.filter(pk=comment_id).first()
+
+        if not comment:
+            return JsonResponse(
+                {'status': 404,
+                 'error': 'Comment with id {} not found'.format(comment_id)},
+                status=404)
+
+        if not comment.user_id == request.user.id:
+            return Response({'status': 403,
+                             'error': "You cannot delete a comment you do not own"},
+                            status=403)
+
+        comment.delete()
+        commenter.delete()
+        return Response({'status': 200,
+                         'data': 'Comment deleted successfully'},
+                        status=200)
+
 
 class CommentLikeView(GenericAPIView):
     permission_classes = [IsAuthenticated]
