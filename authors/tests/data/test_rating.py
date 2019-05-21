@@ -127,3 +127,29 @@ class RatingsTest(BaseTest):
         res = json.loads(response.content.decode('utf-8'))
         self.assertTrue('average_rating' in res['data'])
         self.assertIsInstance(res['data']['average_rating'], float)
+
+    def test_user_rating_in_article_details(self):
+        """
+        Test to ensure that the specific user rating is returned
+        when a user gets an article and that it is a float
+        """
+        article = self.create_article()
+        slug = article.data['data']['slug']
+
+        self.client.post(
+            "/api/articles/{}/rate/".format(slug),
+            self.base_data.rating_data,
+            format='json',
+            HTTP_AUTHORIZATION='Bearer ' + self.control_token
+        )
+
+        response = self.client.get('/api/articles/{}/'.format(slug),
+                                   HTTP_AUTHORIZATION='Bearer ' +
+                                   self.control_token)
+
+        self.assertEqual(response.status_code,
+                         status.HTTP_200_OK)
+
+        res = json.loads(response.content.decode('utf-8'))
+        self.assertTrue('user_rating' in res['data'])
+        self.assertEqual(res['data']['user_rating'], 5)
