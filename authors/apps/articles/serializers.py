@@ -62,6 +62,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         method_name='rating',
         read_only=True)
 
+    user_rating = serializers.SerializerMethodField()
+
     tag_list = TagField(
         many=True,
         required=False
@@ -84,6 +86,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'favorited',
             'favorites_count',
             'average_rating',
+            'user_rating',
             'author',
             'image',
             'comments',
@@ -124,11 +127,13 @@ class ArticleSerializer(serializers.ModelSerializer):
         return False
 
     def check_anonymous(self):
+        """
+        Check if the current user is authenticated
+        """
         request = self.context.get('request')
         if request.user.is_anonymous:
             return True
-        if request:
-            return False
+        return False
 
     def get_favorites_count(self, obj):
 
@@ -146,6 +151,17 @@ class ArticleSerializer(serializers.ModelSerializer):
         if average_rate["rate"]:
             return float('%.2f' % (average_rate["rate"]))
         return 0
+
+    def get_user_rating(self, obj):
+        """
+        Get the rating of the logged in user
+        """
+        if not self.check_anonymous():
+            request = self.context.get('request')
+            rating = Ratings.objects.filter(
+                article=obj, rated_by=request.user).first()
+            if rating:
+                return rating.rating
 
     def get_highlights(self, obj):
 

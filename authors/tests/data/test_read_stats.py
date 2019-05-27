@@ -6,7 +6,7 @@ from .base_test import BaseTest
 from .data import Data
 
 
-class HighlightArticleTestcase(BaseTest):
+class ReadingStatsTestcase(BaseTest):
     """
     This class defines the test suite for like and dislike
     cases.
