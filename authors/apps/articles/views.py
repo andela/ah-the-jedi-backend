@@ -135,6 +135,7 @@ class ArticleView(viewsets.ModelViewSet):
         The update article endpoint
         """
         request.POST._mutable = True
+
         try:
             article = ArticleModel.objects.filter(slug=slug)[0]
         except:
@@ -150,6 +151,16 @@ class ArticleView(viewsets.ModelViewSet):
                 {"status": 403,
                  "error": "You cannot edit an article you do not own"},
                 status=403)
+
+        file_exists = request.FILES.get('image', False)
+        if(file_exists):
+            cloud_response = ImageUploader(request.FILES['image'])
+            if cloud_response is not None:
+                if cloud_response.get('error', False):
+                    return Response(cloud_response, status=int(cloud_response.get('status')))
+            image_url = cloud_response.get(
+                'secure_url', request.FILES['image'])
+            request.data['image'] = image_url
 
         body = request.data.get('body')
         read_time = readtime.of_text(body)
