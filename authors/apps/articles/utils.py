@@ -11,6 +11,7 @@ from fluent_comments.models import FluentComment
 from rest_framework.exceptions import (ValidationError, NotFound)
 from .models import (ArticleModel, TagModel,
                      CommentModel, ReadStatsModel, User)
+from ..profiles.models import UserProfile
 
 
 def ImageUploader(image):
@@ -52,11 +53,12 @@ def user_object(uid):
     """
     Function for getting user object
     """
-    instance = User.objects.filter(id=uid)[0]
+    instance = UserProfile.objects.filter(id=uid)[0]
     user = {
         'id': instance.id,
-        'email': instance.email,
-        'username': instance.username,
+        'email': instance.user.email,
+        'username': instance.user.username,
+        'image': instance.image,
     }
 
     try:

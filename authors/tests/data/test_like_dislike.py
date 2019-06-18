@@ -21,9 +21,6 @@ class LikeDislikeTestCase(BaseTest):
     def setUp(self):
         """ Define the test client and required test variables. """
 
-        # self.client = APIClient()
-
-        # self.base_data = Data()
         BaseTest.setUp(self)
         signup = self.signup_user()
 
