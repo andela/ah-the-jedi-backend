@@ -110,6 +110,7 @@ class ArticleView(viewsets.ModelViewSet):
         get:
         The get an article endpoint
         """
+
         try:
             article = ArticleModel.objects.filter(slug=slug)[0]
         except:
@@ -123,6 +124,16 @@ class ArticleView(viewsets.ModelViewSet):
         serializer = ArticleSerializer(article,
                                        context={'request': request})
         response = Response(serializer.data)
+
+        user = request.user
+
+        if user:
+            article = ArticleModel.objects.filter(slug=slug)[0]
+
+            check_vote = article.votes.exists(user.id)
+            if check_vote:
+                response.data['is_liked'] = True
+
         response.data['author'] = user_object(serializer.data['author'])
         response.data = add_social_share(response.data)
         return JsonResponse({"status": 200,
@@ -498,13 +509,23 @@ class LikeView(GenericAPIView):
 
         if check_vote:
             article.votes.delete(user_id)
+            article_two = ArticleModel.objects.filter(slug=slug)[0]
             return JsonResponse({
                 "status": 200,
+                "slug": article_two.slug,
+                "num_vote_down": article_two.num_vote_down,
+                "num_vote_up": article_two.num_vote_up,
+                "liked": False,
                 "message": "You have deleted this like", },
                 status=200)
         article.votes.up(user_id)
+        article_two = ArticleModel.objects.filter(slug=slug)[0]
 
         return JsonResponse({"status": 200,
+                             "slug": article_two.slug,
+                             "liked": True,
+                             "num_vote_down": article_two.num_vote_down,
+                             "num_vote_up": article_two.num_vote_up,
                              "message": "You have liked this article",
                              },
                             status=200)
@@ -530,11 +551,21 @@ class DisLikeView(GenericAPIView):
         vote_down = article.votes.down(user_id)
 
         if vote_down:
+            article_two = ArticleModel.objects.filter(slug=slug)[0]
             return JsonResponse({"status": 200,
+                                 "slug": article_two.slug,
+                                 "num_vote_down": article_two.num_vote_down,
+                                 "num_vote_up": article_two.num_vote_up,
+                                 "disliked": True,
                                  "message": "You have Disliked this article", },
                                 status=200)
         article.votes.delete(user_id)
+        article_two = ArticleModel.objects.filter(slug=slug)[0]
         return JsonResponse({"status": 200,
+                             "slug": article_two.slug,
+                             "num_vote_down": article_two.num_vote_down,
+                             "num_vote_up": article_two.num_vote_up,
+                             "disliked": True,
                              "message": "You have deleted this dislike", },
                             status=200)
 

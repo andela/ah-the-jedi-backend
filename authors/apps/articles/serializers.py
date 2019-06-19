@@ -100,6 +100,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'highlights',
             'read_count',
             'article_readers',
+            'is_liked',
         )
         lookup_field = 'slug'
         extra_kwargs = {'url': {'lookup_field': 'slug'}}

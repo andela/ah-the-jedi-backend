@@ -41,6 +41,7 @@ class ArticleModel(VoteModel, models.Model):
     facebook = models.URLField(blank=True, null=True)
     mail = models.TextField(blank=False, null=False, default="")
     readtime = models.CharField(blank=False, null=False, max_length=240)
+    is_liked = models.BooleanField(default=False)
 
     author = models.ForeignKey(
         get_user_model(),
