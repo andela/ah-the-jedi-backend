@@ -186,7 +186,7 @@ class ArticleView(viewsets.ModelViewSet):
         try:
             article = ArticleModel.objects.filter(slug=slug)[0]
 
-            if not article.author.id == request.user.id:
+            if not (article.author.id == request.user.id or request.user.is_superuser):
                 return Response({'status': 403, 'error': "You cannot delete an article you do not own"}, status=403)
 
             self.perform_destroy(article)
