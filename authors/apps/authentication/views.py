@@ -127,8 +127,10 @@ class LoginAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user_data = User.objects.get(email=user['email'])
         token = handle_token(user_data)
+        isAdmin = user_data.is_superuser
         res = serializer.data
         res['token'] = token
+        res['isAdmin'] = isAdmin
 
         return Response(res, status=status.HTTP_200_OK)
 
