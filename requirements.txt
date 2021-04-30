@@ -74,7 +74,7 @@ pytz==2019.1
 readtime==1.1.1
 requests==2.21.0
 requests-oauthlib==1.2.0
-rsa==4.0
+rsa==4.7
 ruamel.yaml==0.15.94
 simplejson==3.16.0
 six==1.10.0
